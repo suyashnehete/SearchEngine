@@ -1,8 +1,10 @@
-package core;
+package search;
 
+import algo.LevenshteinDistance;
+import core.SearchResult;
+import core.TrieNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import search.LevenshteinDistance;
 
 import java.util.ArrayList;
 import java.util.Collections;

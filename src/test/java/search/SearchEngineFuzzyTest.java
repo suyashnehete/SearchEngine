@@ -1,6 +1,6 @@
 package search;
 
-import core.SearchEngine;
+
 import core.SearchResult;
 
 import java.util.List;

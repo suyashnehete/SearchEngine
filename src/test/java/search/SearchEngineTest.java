@@ -1,6 +1,5 @@
 package search;
 
-import core.CacheSearchEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

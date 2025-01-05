@@ -1,7 +1,6 @@
 package algo;
 
 import org.junit.jupiter.api.Test;
-import search.LevenshteinDistance;
 
 import static org.junit.jupiter.api.Assertions.*;
 

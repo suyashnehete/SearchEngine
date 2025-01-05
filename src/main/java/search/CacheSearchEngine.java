@@ -1,8 +1,10 @@
-package core;
+package search;
 
 import cache.LRUCache;
-import search.LevenshteinDistance;
-import search.NGramIndexer;
+import algo.LevenshteinDistance;
+import algo.NGramIndexer;
+import core.SearchResult;
+import core.TrieNode;
 
 import java.util.ArrayList;
 import java.util.Collections;
