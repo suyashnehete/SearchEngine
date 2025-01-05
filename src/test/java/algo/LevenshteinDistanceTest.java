@@ -1,3 +1,5 @@
+package algo;
+
 import org.junit.jupiter.api.Test;
 import search.LevenshteinDistance;
 

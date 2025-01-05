@@ -17,9 +17,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * perform fuzzy searches using Levenshtein Distance.
  */
 public class SearchEngine {
-    private static final Logger logger = LoggerFactory.getLogger(SearchEngine.class);
-    private final TrieNode root;
-    private final ReadWriteLock lock;
+    protected static final Logger logger = LoggerFactory.getLogger(SearchEngine.class);
+    protected final TrieNode root;
+    protected final ReadWriteLock lock;
+
 
     /**
      * Constructs a new SearchEngine with an empty Trie and a read-write lock.
@@ -39,25 +40,20 @@ public class SearchEngine {
             return;
         }
 
-        lock.writeLock().lock();
-        try {
-            TrieNode current = root;
-            String normalizedWord = word.toLowerCase();
+        TrieNode current = root;
+        String normalizedWord = word.toLowerCase();
 
-            for (char ch : normalizedWord.toCharArray()) {
-                current.getChildren().putIfAbsent(ch, new TrieNode());
-                current = current.getChildren().get(ch);
-                current.addToTopSearches(normalizedWord);
-            }
-
-            current.setEndOfWord(true);
-            current.setWord(normalizedWord);
-            current.incrementFrequency();
-
-            logger.debug("Inserted word: {} into the Trie", word);
-        } finally {
-            lock.writeLock().unlock();
+        for (char ch : normalizedWord.toCharArray()) {
+            current.getChildren().putIfAbsent(ch, new TrieNode());
+            current = current.getChildren().get(ch);
+            current.addToTopSearches(normalizedWord);
         }
+
+        current.setEndOfWord(true);
+        current.setWord(normalizedWord);
+        current.incrementFrequency();
+
+        logger.debug("Inserted word: {} into the Trie", word);
     }
 
     /**
@@ -113,7 +109,7 @@ public class SearchEngine {
      * @param str the string to search for
      * @return the TrieNode corresponding to the last character of str, or null if it doesn't exist
      */
-    private TrieNode searchNode(String str) {
+    protected TrieNode searchNode(String str) {
         TrieNode current = root;
         for (char ch : str.toCharArray()) {
             current = current.getChildren().get(ch);

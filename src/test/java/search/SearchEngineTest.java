@@ -1,4 +1,6 @@
-import core.SearchEngine;
+package search;
+
+import core.CacheSearchEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -7,11 +9,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SearchEngineTest {
-    private SearchEngine searchEngine;
+    private CacheSearchEngine searchEngine;
 
     @BeforeEach
     void setUp() {
-        searchEngine = new SearchEngine();
+        searchEngine = new CacheSearchEngine();
         // Add some sample data
         searchEngine.insert("cat");
         searchEngine.insert("car");

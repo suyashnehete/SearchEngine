@@ -1,3 +1,5 @@
+package search;
+
 import core.SearchEngine;
 import core.SearchResult;
 
@@ -25,7 +27,7 @@ class SearchEngineFuzzyTest {
     }
 
     @org.junit.jupiter.api.Test
-    void testFuzzySearch() {
+    void testfuzzySearch() {
         List<SearchResult> results = searchEngine.fuzzySearch("helo", 1);
 
         // "helo" -> distance 0
@@ -36,7 +38,7 @@ class SearchEngineFuzzyTest {
     }
 
     @org.junit.jupiter.api.Test
-    void testFuzzySearchWithFrequency() {
+    void testfuzzySearchWithFrequency() {
         // Insert "hello" multiple times to boost its frequency
         searchEngine.insert("hello");
         searchEngine.insert("hello");
@@ -50,13 +52,13 @@ class SearchEngineFuzzyTest {
     }
 
     @org.junit.jupiter.api.Test
-    void testFuzzySearchWithNoMatches() {
+    void testfuzzySearchWithNoMatches() {
         java.util.List<SearchResult> results = searchEngine.fuzzySearch("xyz", 1);
         org.junit.jupiter.api.Assertions.assertTrue(results.isEmpty());
     }
 
     @org.junit.jupiter.api.Test
-    void testFuzzySearchWithLargerDistance() {
+    void testfuzzySearchWithLargerDistance() {
         // With a max distance of 2, words like "help" (2 edits away from "helo") should appear
         java.util.List<SearchResult> results = searchEngine.fuzzySearch("helo", 2);
         // "helo", "hello", and "help" all appear within distance=2
