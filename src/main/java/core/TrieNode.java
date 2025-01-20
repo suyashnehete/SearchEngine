@@ -1,8 +1,6 @@
 package core;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /**
  * Represents a node in a Trie data structure.
@@ -14,6 +12,7 @@ public class TrieNode {
     private int frequency;
     private PriorityQueue<String> topSearches;
     private static final int TOP_SEARCHES_SIZE = 5;
+    private final NavigableSet<Integer> postingList;
 
     /**
      * Constructs a new TrieNode with an empty set of children,
@@ -24,6 +23,7 @@ public class TrieNode {
         this.isEndOfWord = false;
         this.frequency = 0;
         this.topSearches = new PriorityQueue<>();
+        this.postingList = new TreeSet<>();
     }
 
     /**
@@ -109,5 +109,23 @@ public class TrieNode {
                 topSearches.poll();
             }
         }
+    }
+
+    /**
+     * Returns the posting list associated with this TrieNode.
+     *
+     * @return a navigable set of document IDs
+     */
+    public NavigableSet<Integer> getPostingList() {
+        return postingList;
+    }
+
+    /**
+     * Adds a document ID to the posting list associated with this TrieNode.
+     *
+     * @param docId the document ID to add
+     */
+    public void addToPostingList(int docId) {
+        postingList.add(docId);
     }
 }
