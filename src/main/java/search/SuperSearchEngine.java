@@ -1,11 +1,8 @@
 package search;
 
-import core.BloomFilter;
-import core.SkipList;
-import core.TrieNode;
+import core.*;
 
-import java.util.Map;
-import java.util.NavigableSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -17,6 +14,7 @@ public class SuperSearchEngine extends CacheSearchEngine {
     private final BloomFilter bloomFilter;
     private final int[] hashSeeds = {3, 7, 11, 17};
     private final Map<String, SkipList<Integer>> postingLists;
+    private final QueryParser queryParser;
 
     /**
      * Constructs a SuperSearchEngine with a BloomFilter and a ConcurrentHashMap for posting lists.
@@ -25,6 +23,7 @@ public class SuperSearchEngine extends CacheSearchEngine {
         super();
         this.bloomFilter = new BloomFilter(10000, hashSeeds);
         this.postingLists = new ConcurrentHashMap<>();
+        this.queryParser = new QueryParser();
     }
 
     /**
@@ -140,5 +139,28 @@ public class SuperSearchEngine extends CacheSearchEngine {
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    /**
+     * Finds search results for the given query string.
+     *
+     * @param queryString the query string to search for
+     * @return a list of SearchResult objects matching the query
+     */
+    public List<SearchResult> find(String queryString) {
+        if (queryString == null || queryString.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Query query = queryParser.parse(queryString);
+        List<SearchResult> results = new ArrayList<>();
+
+        for (String token : query.tokens()) {
+            if (super.search(token)) {
+                results.add(new SearchResult(token, 0, 1));
+            }
+        }
+
+        return results;
     }
 }

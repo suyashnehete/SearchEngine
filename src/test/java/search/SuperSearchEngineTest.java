@@ -1,8 +1,10 @@
 package search;
 
+import core.SearchResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.NavigableSet;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -84,6 +86,16 @@ public class SuperSearchEngineTest {
 
         assertTrue(searchEngine.search("concurrent1"), "Word 'concurrent1' should be found");
         assertTrue(searchEngine.search("concurrent2"), "Word 'concurrent2' should be found");
+    }
+
+    @Test
+    void testSearchWithQueryParser() {
+        searchEngine.insert("hello");
+        searchEngine.insert("world");
+
+        List<SearchResult> results = searchEngine.find("hello AND world");
+        System.out.println(results);
+        assertEquals(2, results.size(), "Should find both 'hello' and 'world'");
     }
 
 }
