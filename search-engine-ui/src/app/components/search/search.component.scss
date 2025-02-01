@@ -1,0 +1,29 @@
+.search-container {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+input {
+    width: 80%;
+    padding: 10px;
+    margin-right: 10px;
+}
+
+button {
+    padding: 10px 20px;
+}
+
+.loading {
+    margin-top: 20px;
+    font-style: italic;
+}
+
+.results ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.results li {
+    margin: 10px 0;
+}

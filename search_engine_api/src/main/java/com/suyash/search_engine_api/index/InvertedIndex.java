@@ -6,6 +6,7 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,7 +31,7 @@ public class InvertedIndex {
     @Column(nullable = false, unique = true)
     private String word;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "document_ids", joinColumns = @JoinColumn(name = "inverted_index_id"))
     private List<Integer> documentIds;
 }

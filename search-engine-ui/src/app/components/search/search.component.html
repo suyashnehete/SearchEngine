@@ -1,0 +1,23 @@
+<div class="search-container">
+    <h1>Search Engine</h1>
+    <input
+      type="text"
+      [(ngModel)]="query"
+      placeholder="Enter your query..."
+      (keyup.enter)="onSearch()"
+    />
+    <button (click)="onSearch()">Search</button>
+  
+    <div *ngIf="isLoading" class="loading">Loading...</div>
+  
+    <div class="results" *ngIf="results.length > 0">
+      <h2>Results:</h2>
+      <ul>
+        <li *ngFor="let docId of results">Document ID: {{ docId }}</li>
+      </ul>
+    </div>
+  
+    <div *ngIf="!isLoading && results.length === 0 && query.trim()">
+      <p>No results found.</p>
+    </div>
+  </div>
