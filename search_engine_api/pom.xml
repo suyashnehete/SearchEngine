@@ -8,10 +8,10 @@
 		<version>3.4.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.suyash.searchengine</groupId>
-	<artifactId>SearchEngine</artifactId>
+	<groupId>com.suyash</groupId>
+	<artifactId>search_engine_api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>SearchEngine</name>
+	<name>search_engine_api</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
@@ -60,7 +60,6 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.18.3</version>
 		</dependency>
-
 	</dependencies>
 
 	<build>
