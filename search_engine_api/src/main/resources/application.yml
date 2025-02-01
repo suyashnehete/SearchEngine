@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: SearchEngine
+  servlet:
+    multipart:
+      max-file-size: 50MB
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bsn
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: false
+      properties:
+        hibernate:
+          format_sql: true
+      database: postgresql
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+    
+springdoc:
+    default-produces-media-type: application/json
+
+server:
+    servlet:
+        context-path: /api/v1
