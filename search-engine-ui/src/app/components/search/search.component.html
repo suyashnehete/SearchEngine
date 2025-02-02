@@ -24,10 +24,6 @@
           <a [href]="doc.url" target="_blank">{{ doc.title }}</a>
         </h3>
         <p>{{ doc.shortContent }}</p>
-        <div>
-          <button (click)="submitFeedback(doc, true)">👍 Relevant</button>
-          <button (click)="submitFeedback(doc, false)">👎 Not Relevant</button>
-        </div>
       </div>
   </div>
 

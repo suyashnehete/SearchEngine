@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { FeedbackService } from 'src/app/services/feedback/feedback.service';
 import { LoggingService } from 'src/app/services/logging/logging.service';
 import { SearchResponse } from 'src/app/services/models/search-response';
 import { UrlResponse } from 'src/app/services/models/url-response';
@@ -22,7 +21,6 @@ export class SearchComponent {
   constructor(
     private searchService: SearchService,
     private loggingService: LoggingService,
-    private feedbackService: FeedbackService,
   ) { }
 
   onSearch() {
@@ -75,20 +73,6 @@ export class SearchComponent {
           console.error('Error fetching suggestions:', err);
         },
       });
-  }
-
-  submitFeedback(result: UrlResponse, isRelevant: boolean) {
-
-    this.feedbackService
-        .submitFeedback(this.userId, this.query, result.documentId, isRelevant)
-        .subscribe({
-          next: () => {
-            alert('Thank you for your feedback!');
-          },
-          error: (err) => {
-            console.error('Error submitting feedback:', err);
-          },
-        });
   }
 
   setQuery(query: string) {
