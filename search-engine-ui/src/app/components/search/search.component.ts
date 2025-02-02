@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { LoggingService } from 'src/app/services/logging/logging.service';
 import { SearchResponse } from 'src/app/services/models/search-response';
 import { SearchService } from 'src/app/services/search/search.service';
 
@@ -11,10 +12,15 @@ export class SearchComponent {
 
   query: string = '';
   searchResponse: SearchResponse | undefined;
+  suggestions: string[] = [];
   page = 1;
   size = 10;
+  userId: string = '1'; // Hardcoded user ID for now
 
-  constructor(private searchService: SearchService) { }
+  constructor(
+    private searchService: SearchService,
+    private loggingService: LoggingService
+  ) { }
 
   onSearch() {
     this.page = 1;
@@ -23,6 +29,8 @@ export class SearchComponent {
 
   search() {
     if (!this.query.trim()) return;
+
+    this.logUserQuery();
 
     this.searchService.search(this.query, 10, this.page, this.size).subscribe({
       next: (data) => {
@@ -33,6 +41,42 @@ export class SearchComponent {
         console.error('Error fetching results:', err);
       },
     });
+  }
+
+  logUserQuery() {
+    // Log the query before searching
+    this.loggingService.logUserQuery(this.userId, this.query).subscribe({
+      next: () => {
+        console.log('Query logged successfully');
+      },
+      error: (err) => {
+        console.error('Error logging query:', err);
+      },
+    });
+  }
+
+  onInputChange() {
+    if (!this.query.trim()) {
+      this.suggestions = [];
+      return;
+    }
+
+    this.searchService
+      .getSuggestions(this.query)
+      .subscribe({
+        next: (data) => {
+          this.suggestions = data;
+        },
+        error: (err) => {
+          this.suggestions = [];
+          console.error('Error fetching suggestions:', err);
+        },
+      });
+  }
+
+  setQuery(query: string) {
+    this.query = query;
+    this.search();
   }
 
   goToNextPage() {

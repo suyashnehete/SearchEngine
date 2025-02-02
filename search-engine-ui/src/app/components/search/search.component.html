@@ -5,9 +5,18 @@
     [(ngModel)]="query"
     placeholder="Enter your query..."
     (keyup.enter)="onSearch()"
+    (input)="onInputChange()"
   />
   <button (click)="onSearch()">Search</button>
 
+  <div *ngIf="suggestions.length > 0" class="suggestions">
+    <ul>
+      <li *ngFor="let suggestion of suggestions" (click)="setQuery(suggestion)">
+        {{ suggestion }}
+      </li>
+    </ul>
+  </div>
+  
   <div class="results" *ngIf="searchResponse?.documents?.length">
     <h2>Results:</h2>
       <div *ngFor="let doc of searchResponse?.documents || []" class="result-item">

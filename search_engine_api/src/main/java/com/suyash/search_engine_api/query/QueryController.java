@@ -18,6 +18,6 @@ public class QueryController {
             @RequestParam(defaultValue = "10") int topK,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return queryService.processQuery(query, topK, page, size);
+        return queryService.processQueryWithCorrections(query, topK, page, size);
     }
 }

@@ -1,4 +1,4 @@
-package com.suyash.search_engine_api.query;
+package com.suyash.search_engine_api.query.utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
