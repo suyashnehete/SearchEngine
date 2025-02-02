@@ -7,6 +7,7 @@ import { SearchComponent } from './components/search/search.component';
 import { FormsModule } from '@angular/forms';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { CrawlerComponent } from './components/crawler/crawler.component';
+import { OAuthModule } from 'angular-oauth2-oidc';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,8 @@ import { CrawlerComponent } from './components/crawler/crawler.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FormsModule
+    FormsModule,
+    OAuthModule.forRoot()
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi())

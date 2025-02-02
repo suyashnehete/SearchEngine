@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FeedbackService } from 'src/app/services/feedback/feedback.service';
 import { LoggingService } from 'src/app/services/logging/logging.service';
 import { SearchResponse } from 'src/app/services/models/search-response';
 import { SearchService } from 'src/app/services/search/search.service';
@@ -15,11 +16,12 @@ export class SearchComponent {
   suggestions: string[] = [];
   page = 1;
   size = 10;
-  userId: string = '1'; // Hardcoded user ID for now
+  userId: string = 'anonymous'; // Hardcoded user ID for now
 
   constructor(
     private searchService: SearchService,
-    private loggingService: LoggingService
+    private loggingService: LoggingService,
+    private feedbackService: FeedbackService,
   ) { }
 
   onSearch() {
@@ -72,6 +74,20 @@ export class SearchComponent {
           console.error('Error fetching suggestions:', err);
         },
       });
+  }
+
+  submitFeedback(result: any, isRelevant: boolean) {
+
+    this.feedbackService
+        .submitFeedback(this.userId, this.query, result.id, isRelevant)
+        .subscribe({
+          next: () => {
+            alert('Thank you for your feedback!');
+          },
+          error: (err) => {
+            console.error('Error submitting feedback:', err);
+          },
+        });
   }
 
   setQuery(query: string) {

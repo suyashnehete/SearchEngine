@@ -8,10 +8,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
 import com.suyash.search_engine_api.crawler.CrawledPage;
 import com.suyash.search_engine_api.crawler.CrawledPageRepository;
+import com.suyash.search_engine_api.query.utils.PageRank;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +35,8 @@ public class IndexerService {
         Map<String, Map<Integer, Integer>> termFrequencyMap = new HashMap<>();
         Map<String, Integer> documentFrequencyMap = new HashMap<>();
 
+        // Build adjacency list for links between pages
+        Map<Integer, List<Integer>> adjacencyList = new HashMap<>();
         for (CrawledPage page : pages) {
             int docId = Math.toIntExact(page.getId());
             String content = page.getContent();
@@ -52,10 +59,32 @@ public class IndexerService {
             for (String word : uniqueWords) {
                 documentFrequencyMap.merge(word, 1, Integer::sum);
             }
+
+            // Extract links and build adjacency list
+            Document doc = Jsoup.parse(content);
+            Elements links = doc.select("a[href]");
+            for (Element link : links) {
+                String nextUrl = link.absUrl("href");
+                CrawledPage linkedPage = crawledPageRepository.findByUrl(nextUrl);
+                if (linkedPage != null) {
+                    int linkedDocId = Math.toIntExact(linkedPage.getId());
+                    adjacencyList.computeIfAbsent(docId, k -> new ArrayList<>()).add(linkedDocId);
+                }
+            }
         }
 
         // Compute TF-IDF and save to database
         saveTfIdfToDatabase(termFrequencyMap, documentFrequencyMap, pages.size());
+
+        // Compute PageRank and save to database
+        Map<Integer, Double> pageRankScores = PageRank.calculate(adjacencyList);
+        for (Map.Entry<Integer, Double> entry : pageRankScores.entrySet()) {
+            CrawledPage page = crawledPageRepository.findById((long) entry.getKey()).orElse(null);
+            if (page != null) {
+                page.setPageRankScore(entry.getValue());
+                crawledPageRepository.save(page);
+            }
+        }
     }
 
     private String[] tokenize(String text) {

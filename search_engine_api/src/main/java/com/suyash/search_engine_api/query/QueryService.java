@@ -209,7 +209,7 @@ public class QueryService {
 
         // Retrieve document IDs for each term
         Map<String, Set<Integer>> termToDocIds = new HashMap<>();
-        Map<Integer, Integer> docScores = new HashMap<>();
+        Map<Integer, Double> docScores = new HashMap<>();
 
         for (String term : queryTerms) {
             InvertedIndex index = invertedIndexRepository.findByWord(term);
@@ -218,9 +218,11 @@ public class QueryService {
 
                 // Calculate frequency-based scores
                 for (Integer docId : index.getDocumentIds()) {
-                    String content = crawledPageRepository.findById((long) docId).orElse(null).getContent();
-                    int termFrequency = countOccurrences(content, term);
-                    docScores.put(docId, docScores.getOrDefault(docId, 0) + termFrequency);
+                    CrawledPage page = crawledPageRepository.findById((long) docId).orElse(null);
+                    if (page != null) {
+                        double positionScore = calculatePositionScore(page.getContent(), term);
+                        docScores.put(docId, docScores.getOrDefault(docId, 0.0) + positionScore);
+                    }
                 }
             }
         }
@@ -236,7 +238,7 @@ public class QueryService {
         }
 
         // Rank documents by frequency-based scores
-        return frquencyRankedDocuments(resultDocIds, docScores, topK);
+        return frequencyRankedDocuments(resultDocIds, docScores, topK);
     }
 
     private int countOccurrences(String content, String term) {
@@ -249,9 +251,15 @@ public class QueryService {
         return count;
     }
 
-    private List<Integer> frquencyRankedDocuments(Set<Integer> docIds, Map<Integer, Integer> docScores, int topK) {
+    private List<Integer> frequencyRankedDocuments(Set<Integer> docIds, Map<Integer, Double> docScores, int topK) {
         return docIds.stream()
-                .sorted((id1, id2) -> docScores.getOrDefault(id2, 0) - docScores.getOrDefault(id1, 0))
+                .sorted((id1, id2) -> {
+                    double score1 = docScores.getOrDefault(id1, 0.0)
+                            + crawledPageRepository.findById((long) id1).orElse(null).getPageRankScore();
+                    double score2 = docScores.getOrDefault(id2, 0.0)
+                            + crawledPageRepository.findById((long) id2).orElse(null).getPageRankScore();
+                    return Double.compare(score2, score1);
+                })
                 .limit(topK)
                 .toList();
     }
@@ -260,6 +268,15 @@ public class QueryService {
         return WORD_PATTERN.matcher(text.toLowerCase()).results()
                 .map(match -> match.group())
                 .toArray(String[]::new);
+    }
+
+    private double calculatePositionScore(String content, String term) {
+        int index = content.toLowerCase().indexOf(term.toLowerCase());
+        if (index == -1) {
+            return 0.0; // Term not found
+        }
+        // Higher score for terms appearing earlier in the content
+        return 1.0 / (index + 1);
     }
 
     private List<Integer> rankDocuments(Set<Integer> docIds, Map<String, Set<Integer>> termToDocIds, int topK) {

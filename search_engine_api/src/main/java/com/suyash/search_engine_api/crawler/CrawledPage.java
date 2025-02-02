@@ -30,7 +30,7 @@ import lombok.Setter;
 @Entity(name = "crawled_pages")
 @EntityListeners(AuditingEntityListener.class)
 public class CrawledPage {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,7 +43,7 @@ public class CrawledPage {
 
     @Column(columnDefinition = "TEXT")
     private String shortContent;
-    
+
     @Lob
     private String content;
 
@@ -54,5 +54,7 @@ public class CrawledPage {
     @ElementCollection
     @CollectionTable(name = "page_tags", joinColumns = @JoinColumn(name = "page_id"))
     private List<String> tags;
-}
 
+    @Column(nullable = false)
+    private double pageRankScore;
+}
