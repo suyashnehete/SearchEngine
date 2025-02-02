@@ -10,21 +10,40 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
 
+import com.suyash.search_engine_api.cache.LRUCacheService;
 import com.suyash.search_engine_api.index.InvertedIndex;
 import com.suyash.search_engine_api.index.InvertedIndexRepository;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
 public class QueryService {
-    
+
     private final InvertedIndexRepository invertedIndexRepository;
+    private final LRUCacheService<String, List<Integer>> cacheService;
+
+    private Trie queryTrie = new Trie();
 
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w+");
     private static final Set<String> STOP_WORDS = Set.of("the", "and", "is", "in", "to", "of", "a", "for");
 
+    // Populate Trie with frequent queries from cache
+    @PostConstruct
+    public void populateTrie() {
+        cacheService.asMap().keySet().forEach(queryTrie::insert);
+    }
+
     public List<Integer> processQuery(String query, int topK) {
+
+        // Check cache first
+        List<Integer> cachedResults = cacheService.getIfPresent(query);
+        if (cachedResults != null) {
+            System.out.println("Cache hit for query: " + query);
+            return cachedResults;
+        }
+
         // Tokenize and normalize the query
         String[] queryTerms = tokenize(query);
 
@@ -54,7 +73,30 @@ public class QueryService {
             return Collections.emptyList();
         }
 
-        return rankDocuments(resultDocIds, termToDocIds, topK);
+        // Rank documents by relevance
+        List<Integer> rankedResults = rankDocuments(resultDocIds, termToDocIds, topK);
+
+        // Store results in cache
+        cacheService.put(query, rankedResults);
+
+        return rankedResults;
+    }
+
+    public SearchResponse processQuery(String query, int topK, int page, int size) {
+        List<Integer> allResults = processQuery(query, topK);
+        int start = (page - 1) * size;
+        int end = Math.min(start + size, allResults.size());
+        List<Integer> pagedResults = Collections.emptyList();
+        if(start <= end){
+            pagedResults = allResults.subList(start, end);
+        }
+        return SearchResponse.builder()
+                .documentIds(pagedResults)
+                .totalResults(allResults.size())
+                .totalPages((int) Math.ceil((double) allResults.size() / size))
+                .currentPage(page)
+                .pageSize(size)
+                .build();
     }
 
     private String[] tokenize(String text) {
@@ -82,5 +124,9 @@ public class QueryService {
                 .limit(topK)
                 .map(Map.Entry::getKey)
                 .toList();
+    }
+
+    public List<String> getSuggestions(String prefix) {
+        return queryTrie.getSuggestions(prefix);
     }
 }

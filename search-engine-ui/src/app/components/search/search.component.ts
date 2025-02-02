@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { SearchService } from 'src/app/services/search.service';
+import { SearchResponse } from 'src/app/services/models/search-response';
+import { SearchService } from 'src/app/services/search/search.service';
 
 @Component({
   selector: 'app-search',
@@ -7,25 +8,52 @@ import { SearchService } from 'src/app/services/search.service';
   styleUrls: ['./search.component.scss']
 })
 export class SearchComponent {
-  query: string = '';
-  results: number[] = [];
-  isLoading: boolean = false;
 
-  constructor(private searchService: SearchService) {}
+  query: string = '';
+  searchResponse: SearchResponse | undefined;
+  page = 1;
+  size = 10;
+
+  constructor(private searchService: SearchService) { }
 
   onSearch() {
+    this.page = 1;
+    this.search();
+  }
+
+  search() {
     if (!this.query.trim()) return;
 
-    this.isLoading = true;
-    this.searchService.search(this.query).subscribe({
+    this.searchService.search(this.query, 10, this.page, this.size).subscribe({
       next: (data) => {
-        this.results = data;
-        this.isLoading = false;
+        this.searchResponse = data;
       },
       error: (err) => {
+        this.searchResponse = undefined;
         console.error('Error fetching results:', err);
-        this.isLoading = false;
       },
     });
   }
+
+  goToNextPage() {
+    this.page++;
+    this.search();
+  }
+  goToPage(i: any) {
+    this.page = i;
+    this.search();
+  }
+  goToLastPage() {
+    this.page = this.searchResponse?.totalPages as number;
+    this.search();
+  }
+  goToPreviousPage() {
+    this.page--;
+    this.search();
+  }
+  goToFirstPage() {
+    this.page = 1;
+    this.search();
+  }
+
 }
