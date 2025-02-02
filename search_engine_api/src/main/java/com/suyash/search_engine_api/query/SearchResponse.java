@@ -6,7 +6,7 @@ import lombok.Builder;
 
 @Builder
 public record SearchResponse(
-        List<Integer> documentIds,
+        List<UrlResponse> documents,
         int totalResults,
         int totalPages,
         int currentPage,

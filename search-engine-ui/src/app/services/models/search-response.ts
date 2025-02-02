@@ -1,6 +1,8 @@
+import { UrlResponse } from "./url-response";
+
 export interface SearchResponse {
 
-        documentIds: number[];
+        documents: UrlResponse[];
         totalResults: number;
         totalPages: number;
         currentPage: number;

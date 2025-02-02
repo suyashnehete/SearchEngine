@@ -27,3 +27,26 @@ button {
 .results li {
     margin: 10px 0;
 }
+
+.result-item {
+    margin-bottom: 20px;
+  }
+  
+  .result-item h3 {
+    margin: 0;
+  }
+  
+  .result-item a {
+    text-decoration: none;
+    color: blue;
+  }
+  
+  .result-item a:hover {
+    text-decoration: underline;
+  }
+  
+  .result-item p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: gray;
+  }

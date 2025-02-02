@@ -1,6 +1,7 @@
 package com.suyash.search_engine_api.index;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -34,4 +35,7 @@ public class InvertedIndex {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "document_ids", joinColumns = @JoinColumn(name = "inverted_index_id"))
     private List<Integer> documentIds;
+
+    @Column(columnDefinition = "JSONB")
+    private Map<Integer, Double> tfidfScores;
 }

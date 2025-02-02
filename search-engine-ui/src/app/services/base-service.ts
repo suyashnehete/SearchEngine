@@ -17,4 +17,8 @@ export class BaseService {
     return this.http.get<T>(`${this.apiUrl}${path}`);
   }
 
+  post<T>(path: string, body: any): Observable<T> {
+    return this.http.post<T>(`${this.apiUrl}${path}`, body);
+  }
+
 }

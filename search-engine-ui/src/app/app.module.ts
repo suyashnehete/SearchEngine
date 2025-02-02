@@ -6,11 +6,13 @@ import { AppComponent } from './app.component';
 import { SearchComponent } from './components/search/search.component';
 import { FormsModule } from '@angular/forms';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { CrawlerComponent } from './components/crawler/crawler.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    SearchComponent
+    SearchComponent,
+    CrawlerComponent
   ],
   imports: [
     BrowserModule,
