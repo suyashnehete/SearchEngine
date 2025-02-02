@@ -31,7 +31,7 @@ public class Feedback {
 
     private String query;
 
-    private int documentId;
+    private long documentId;
 
     private boolean isRelevant;
 

@@ -150,6 +150,7 @@ public class QueryService {
                         return null;
                     }
                     return UrlResponse.builder()
+                            .documentId(pageObj.getId())
                             .title(pageObj.getTitle())
                             .url(pageObj.getUrl())
                             .shortContent(pageObj.getShortContent())
@@ -186,6 +187,7 @@ public class QueryService {
                         return null;
                     }
                     return UrlResponse.builder()
+                            .documentId(pageObj.getId())
                             .title(pageObj.getTitle())
                             .url(pageObj.getUrl())
                             .shortContent(pageObj.getShortContent())

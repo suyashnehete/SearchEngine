@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FeedbackService } from 'src/app/services/feedback/feedback.service';
 import { LoggingService } from 'src/app/services/logging/logging.service';
 import { SearchResponse } from 'src/app/services/models/search-response';
+import { UrlResponse } from 'src/app/services/models/url-response';
 import { SearchService } from 'src/app/services/search/search.service';
 
 @Component({
@@ -76,10 +77,10 @@ export class SearchComponent {
       });
   }
 
-  submitFeedback(result: any, isRelevant: boolean) {
+  submitFeedback(result: UrlResponse, isRelevant: boolean) {
 
     this.feedbackService
-        .submitFeedback(this.userId, this.query, result.id, isRelevant)
+        .submitFeedback(this.userId, this.query, result.documentId, isRelevant)
         .subscribe({
           next: () => {
             alert('Thank you for your feedback!');
