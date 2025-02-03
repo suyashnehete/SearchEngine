@@ -12,17 +12,15 @@ import lombok.AllArgsConstructor;
 @SpringBootApplication
 @AllArgsConstructor
 @EnableJpaAuditing
-public class SearchEngineApiApplication implements CommandLineRunner{
+public class SearchEngineApiApplication implements CommandLineRunner {
 
-	private final IndexerService indexerService;
+    public static void main(String[] args) {
+        SpringApplication.run(SearchEngineApiApplication.class, args);
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.run(SearchEngineApiApplication.class, args);
-	}
+    @Override
+    public void run(String... args) throws Exception {
 
-	@Override
-	public void run(String... args) throws Exception {
-		indexerService.buildIndex();
-	}
+    }
 
 }

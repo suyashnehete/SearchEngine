@@ -29,17 +29,14 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class QueryService {
 
+    private static final Pattern WORD_PATTERN = Pattern.compile("\\w+");
+    private static final Set<String> STOP_WORDS = Set.of("the", "and", "is", "in", "to", "of", "a", "for");
     private final InvertedIndexRepository invertedIndexRepository;
     private final CrawledPageRepository crawledPageRepository;
     private final LRUCacheService<String, List<Integer>> cacheService;
-
     private Trie queryTrie = new Trie();
     private NGramModel nGramModel = new NGramModel(2);
     private Map<String, List<String>> userSearchHistory = new HashMap<>();
-
-    private static final Pattern WORD_PATTERN = Pattern.compile("\\w+");
-    private static final Set<String> STOP_WORDS = Set.of("the", "and", "is", "in", "to", "of", "a", "for");
-
     private AtomicInteger queryCount = new AtomicInteger(0);
     private AtomicInteger cacheHitCount = new AtomicInteger(0);
 
@@ -206,6 +203,17 @@ public class QueryService {
     }
 
     public List<Integer> processQueryWithRanking(String query, int topK) {
+
+        queryCount.incrementAndGet();
+
+        // Check cache first
+        List<Integer> cachedResults = cacheService.getIfPresent(query);
+        if (cachedResults != null) {
+            System.out.println("Cache hit for query: " + query);
+            cacheHitCount.incrementAndGet();
+            return cachedResults;
+        }
+
         // Tokenize and normalize the query
         String[] queryTerms = tokenize(query);
 
@@ -240,7 +248,10 @@ public class QueryService {
         }
 
         // Rank documents by frequency-based scores
-        return frequencyRankedDocuments(resultDocIds, docScores, topK);
+        List<Integer> rankedResults = frequencyRankedDocuments(resultDocIds, docScores, topK);
+        // Store results in cache
+        cacheService.put(query, rankedResults);
+        return rankedResults;
     }
 
     private int countOccurrences(String content, String term) {
@@ -254,6 +265,9 @@ public class QueryService {
     }
 
     private List<Integer> frequencyRankedDocuments(Set<Integer> docIds, Map<Integer, Double> docScores, int topK) {
+        if (docIds == null) {
+            return Collections.emptyList();
+        }
         return docIds.stream()
                 .sorted((id1, id2) -> {
                     double score1 = docScores.getOrDefault(id1, 0.0)
@@ -334,6 +348,11 @@ public class QueryService {
     }
 
     public SearchResponse processQueryWithCorrections(String query, int topK, int page, int size) {
+        Set<String> allQueries = new HashSet<>();
+        allQueries.add(query);
+        allQueries.addAll(getContextAwareSuggestions("anonymous", query));
+        allQueries.addAll(getSuggestionsNGram(query));
+        allQueries.addAll(getSuggestionsTrie(query));
         SearchResponse results = processQuery(query, topK, page, size);
 
         if (!results.documents().isEmpty()) {
@@ -344,15 +363,18 @@ public class QueryService {
     }
 
     private SearchResponse suggestCorrections(String query, int topK, int page, int size) {
-        List<String> allQueries = new ArrayList<>(cacheService.asMap().keySet());
+        Set<String> allQueries = new HashSet<>(cacheService.asMap().keySet());
         Map<String, Integer> corrections = new HashMap<>();
-
         for (String cachedQuery : allQueries) {
             int distance = EditDistance.calculate(query, cachedQuery);
             if (distance <= query.length() / 3) {
                 corrections.put(cachedQuery, distance);
             }
         }
+
+        allQueries.addAll(getContextAwareSuggestions("anonymous", query));
+        allQueries.addAll(getSuggestionsNGram(query));
+        allQueries.addAll(getSuggestionsTrie(query));
 
         List<String> topQueries = corrections.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue())

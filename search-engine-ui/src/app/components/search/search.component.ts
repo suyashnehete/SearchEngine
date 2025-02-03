@@ -1,8 +1,7 @@
-import { Component } from '@angular/core';
-import { LoggingService } from 'src/app/services/logging/logging.service';
-import { SearchResponse } from 'src/app/services/models/search-response';
-import { UrlResponse } from 'src/app/services/models/url-response';
-import { SearchService } from 'src/app/services/search/search.service';
+import {Component} from '@angular/core';
+import {LoggingService} from 'src/app/services/logging/logging.service';
+import {SearchResponse} from 'src/app/services/models/search-response';
+import {SearchService} from 'src/app/services/search/search.service';
 
 @Component({
   selector: 'app-search',
@@ -21,10 +20,12 @@ export class SearchComponent {
   constructor(
     private searchService: SearchService,
     private loggingService: LoggingService,
-  ) { }
+  ) {
+  }
 
   onSearch() {
     this.page = 1;
+    this.suggestions = [];
     this.search();
   }
 
@@ -33,7 +34,7 @@ export class SearchComponent {
 
     this.logUserQuery();
 
-    this.searchService.search(this.query, 10, this.page, this.size).subscribe({
+    this.searchService.search(this.query, 1000, this.page, this.size).subscribe({
       next: (data) => {
         this.searchResponse = data;
       },
@@ -63,7 +64,7 @@ export class SearchComponent {
     }
 
     this.searchService
-      .getSuggestions(this.query)
+      .getSuggestions(this.query, this.userId)
       .subscribe({
         next: (data) => {
           this.suggestions = data;
@@ -76,6 +77,7 @@ export class SearchComponent {
   }
 
   setQuery(query: string) {
+    this.suggestions = [];
     this.query = query;
     this.search();
   }
@@ -84,18 +86,22 @@ export class SearchComponent {
     this.page++;
     this.search();
   }
+
   goToPage(i: any) {
     this.page = i;
     this.search();
   }
+
   goToLastPage() {
     this.page = this.searchResponse?.totalPages as number;
     this.search();
   }
+
   goToPreviousPage() {
     this.page--;
     this.search();
   }
+
   goToFirstPage() {
     this.page = 1;
     this.search();

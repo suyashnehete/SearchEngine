@@ -3,8 +3,14 @@ package com.suyash.search_engine_api.index;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.annotations.Type;
+
+import com.suyash.search_engine_api.converter.JsonbMapConverter;
+import com.vladmihalcea.hibernate.type.json.JsonType;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -36,6 +42,8 @@ public class InvertedIndex {
     @CollectionTable(name = "document_ids", joinColumns = @JoinColumn(name = "inverted_index_id"))
     private List<Integer> documentIds;
 
+    @Type(JsonType.class)
     @Column(columnDefinition = "JSONB")
+    @Convert(converter = JsonbMapConverter.class)
     private Map<Integer, Double> tfidfScores;
 }

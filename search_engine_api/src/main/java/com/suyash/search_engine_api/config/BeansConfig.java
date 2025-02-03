@@ -23,10 +23,10 @@ public class BeansConfig {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
         config.setAllowedHeaders(Arrays.asList(
-            HttpHeaders.ORIGIN,
-            HttpHeaders.ACCEPT,
-            HttpHeaders.CONTENT_TYPE,
-            HttpHeaders.AUTHORIZATION
+                HttpHeaders.ORIGIN,
+                HttpHeaders.ACCEPT,
+                HttpHeaders.CONTENT_TYPE,
+                HttpHeaders.AUTHORIZATION
         ));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         source.registerCorsConfiguration("/**", config);

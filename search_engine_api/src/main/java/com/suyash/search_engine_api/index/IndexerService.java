@@ -24,14 +24,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class IndexerService {
 
+    private static final Pattern WORD_PATTERN = Pattern.compile("\\w+");
+    private static final Set<String> STOP_WORDS = Set.of("the", "and", "is", "in", "to", "of", "a", "for");
     private final CrawledPageRepository crawledPageRepository;
     private final InvertedIndexRepository invertedIndexRepository;
 
-    private static final Pattern WORD_PATTERN = Pattern.compile("\\w+");
-    private static final Set<String> STOP_WORDS = Set.of("the", "and", "is", "in", "to", "of", "a", "for");
-
-    public void buildIndex() {
-        List<CrawledPage> pages = crawledPageRepository.findAll();
+    public void buildIndex(List<CrawledPage> pages) {
         Map<String, Map<Integer, Integer>> termFrequencyMap = new HashMap<>();
         Map<String, Integer> documentFrequencyMap = new HashMap<>();
 
@@ -94,35 +92,35 @@ public class IndexerService {
     }
 
     private void saveTfIdfToDatabase(Map<String, Map<Integer, Integer>> termFrequencyMap,
-            Map<String, Integer> documentFrequencyMap, int totalDocuments) {
-                for (Map.Entry<String, Map<Integer, Integer>> entry : termFrequencyMap.entrySet()) {
-                    String word = entry.getKey();
-                    Map<Integer, Integer> tfMap = entry.getValue();
-                    int df = documentFrequencyMap.getOrDefault(word, 1);
-            
-                    Map<Integer, Double> tfidfScores = new HashMap<>();
-                    for (Map.Entry<Integer, Integer> docEntry : tfMap.entrySet()) {
-                        int docId = docEntry.getKey();
-                        int tf = docEntry.getValue();
-                        double idf = Math.log((double) totalDocuments / df);
-                        double tfIdf = tf * idf;
-                        tfidfScores.put(docId, tfIdf);
-                    }
-            
-                    // Save TF-IDF scores to database
-                    InvertedIndex index = invertedIndexRepository.findByWord(word);
-                    if (index == null) {
-                        index = InvertedIndex.builder()
-                                .word(word)
-                                .documentIds(new ArrayList<>(tfidfScores.keySet()))
-                                .tfidfScores(tfidfScores)
-                                .build();
-                    } else {
-                        index.getDocumentIds().addAll(tfidfScores.keySet());
-                        index.getTfidfScores().putAll(tfidfScores);
-                    }
-                    invertedIndexRepository.save(index);
-                }
+                                     Map<String, Integer> documentFrequencyMap, int totalDocuments) {
+        for (Map.Entry<String, Map<Integer, Integer>> entry : termFrequencyMap.entrySet()) {
+            String word = entry.getKey();
+            Map<Integer, Integer> tfMap = entry.getValue();
+            int df = documentFrequencyMap.getOrDefault(word, 1);
+
+            Map<Integer, Double> tfidfScores = new HashMap<>();
+            for (Map.Entry<Integer, Integer> docEntry : tfMap.entrySet()) {
+                int docId = docEntry.getKey();
+                int tf = docEntry.getValue();
+                double idf = Math.log((double) totalDocuments / df);
+                double tfIdf = tf * idf;
+                tfidfScores.put(docId, tfIdf);
+            }
+
+            // Save TF-IDF scores to database
+            InvertedIndex index = invertedIndexRepository.findByWord(word);
+            if (index == null) {
+                index = InvertedIndex.builder()
+                        .word(word)
+                        .documentIds(new ArrayList<>(tfidfScores.keySet()))
+                        .tfidfScores(tfidfScores)
+                        .build();
+            } else {
+                index.getDocumentIds().addAll(tfidfScores.keySet());
+                index.getTfidfScores().putAll(tfidfScores);
+            }
+            invertedIndexRepository.save(index);
+        }
     }
 
     // private void saveToDatabase(Map<String, Set<Integer>> invertedIndexMap) {

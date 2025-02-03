@@ -1,5 +1,6 @@
 package com.suyash.search_engine_api.crawler;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -12,19 +13,22 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/crawler")
+@RequestMapping("crawler")
 public class CrawlerController {
 
-    private WebCrawlerService webCrawlerService;
+    private final WebCrawlerService webCrawlerService;
 
-    @PostMapping("/submit-url")
-    public ResponseEntity<String> submitUrl(@RequestBody Map<String, String> requestBody) {
+    @PostMapping
+    public ResponseEntity<?> submitUrl(@RequestBody Map<String, String> requestBody) {
         String url = requestBody.get("url");
         if (url == null || !webCrawlerService.isValidUrl(url)) {
             return ResponseEntity.badRequest().body("Invalid URL");
         }
 
         webCrawlerService.addUrlToQueue(url);
-        return ResponseEntity.ok("URL added to queue: " + url);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "URL added to queue");
+        response.put("url", url);
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,74 +1,156 @@
-.search-container {
-    max-width: 600px;
-    margin: 0 auto;
-    text-align: center;
+// Variables
+$primary-color: #4a90e2;
+$hover-color: darken($primary-color, 10%);
+$shadow-color: rgba(0, 0, 0, 0.1);
+$transition-speed: 0.3s;
+
+.search-app {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 2rem 1rem;
+
+  // Navigation button styles
+  .btn-outline-primary {
+    border-width: 2px;
+    border-radius: 8px;
+    padding: 0.5rem 1.2rem;
+    transition: all $transition-speed;
+
+    &:hover {
+      background-color: $primary-color;
+      border-color: $primary-color;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px $shadow-color;
+    }
+  }
 }
 
-input {
-    width: 80%;
-    padding: 10px;
-    margin-right: 10px;
+// Search box styles
+.search-box {
+  .form-control {
+    border: none;
+    border-radius: 12px 0 0 12px;
+    padding: 1.2rem 1.5rem;
+    font-size: 1.1rem;
+    transition: all $transition-speed;
+
+    &:focus {
+      box-shadow: 0 0 0 0.25rem rgba($primary-color, 0.25);
+    }
+  }
+
+  .btn {
+    border-radius: 0 12px 12px 0;
+    padding: 0 1.8rem;
+    transition: all $transition-speed;
+
+    &:hover {
+      background-color: $hover-color;
+    }
+  }
 }
 
-button {
-    padding: 10px 20px;
+.search-app {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 2rem 1rem;
+
+  // Header styles
+  h1 {
+    color: $primary-color;
+    transition: color $transition-speed;
+
+    &:hover {
+      color: $hover-color;
+    }
+  }
+
+
+  // Suggestions dropdown
+  .suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    margin-top: 0.5rem;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px $shadow-color;
+
+    .suggestion-item {
+      padding: 0.8rem 1.2rem;
+      cursor: pointer;
+      transition: background-color $transition-speed;
+
+      &:hover {
+        background-color: rgba($primary-color, 0.1);
+      }
+    }
+  }
+
+  // Results styles
+  .result-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: transform $transition-speed, box-shadow $transition-speed;
+    box-shadow: 0 2px 4px $shadow-color;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px $shadow-color;
+    }
+
+    .result-title {
+      font-size: 1.25rem;
+      margin-bottom: 0.8rem;
+
+      a {
+        color: $primary-color;
+
+        &:hover {
+          color: $hover-color;
+        }
+
+        .fa-external-link-alt {
+          font-size: 0.8em;
+          opacity: 0.7;
+        }
+      }
+    }
+
+    .result-content {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+  }
+
+  // Pagination styles
+  .pagination {
+    .page-link {
+      color: $primary-color;
+      border: none;
+      margin: 0 0.2rem;
+      border-radius: 8px;
+      padding: 0.8rem 1.2rem;
+      transition: all $transition-speed;
+
+      &:hover:not(.disabled) {
+        background-color: rgba($primary-color, 0.1);
+        color: $hover-color;
+      }
+    }
+
+    .active .page-link {
+      background-color: $primary-color;
+      color: white;
+
+      &:hover {
+        background-color: $hover-color;
+      }
+    }
+  }
 }
-
-.loading {
-    margin-top: 20px;
-    font-style: italic;
-}
-
-.results ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.results li {
-    margin: 10px 0;
-}
-
-.result-item {
-    margin-bottom: 20px;
-  }
-  
-  .result-item h3 {
-    margin: 0;
-  }
-  
-  .result-item a {
-    text-decoration: none;
-    color: blue;
-  }
-  
-  .result-item a:hover {
-    text-decoration: underline;
-  }
-  
-  .result-item p {
-    margin: 5px 0 0;
-    font-size: 14px;
-    color: gray;
-  }
-
-  .suggestions {
-    border: 1px solid #ccc;
-    max-height: 150px;
-    overflow-y: auto;
-    margin-top: 5px;
-  }
-  
-  .suggestions ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .suggestions li {
-    padding: 8px;
-    cursor: pointer;
-  }
-  
-  .suggestions li:hover {
-    background-color: #f0f0f0;
-  }

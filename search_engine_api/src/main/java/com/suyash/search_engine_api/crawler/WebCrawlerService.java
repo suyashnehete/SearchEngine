@@ -1,15 +1,20 @@
 package com.suyash.search_engine_api.crawler;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.hibernate.mapping.Index;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
+
+import com.suyash.search_engine_api.index.IndexerService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class WebCrawlerService {
 
     private final CrawledPageRepository repository;
+    private final IndexerService indexerService;
 
     private Queue<String> queue = new ConcurrentLinkedQueue<>();
     private HashSet<String> visited = new HashSet<>();
@@ -36,7 +42,8 @@ public class WebCrawlerService {
     public void startCrawling() {
         new Thread(() -> {
             isCrawling = true;
-            while (!queue.isEmpty() && visited.size() < 10) { // Limiting to 10 pages for now
+            List<CrawledPage> pages = new ArrayList<>();
+            while (!queue.isEmpty() && visited.size() < 100) { // Limiting to 100 pages for now
                 String currentUrl = queue.poll();
                 if (currentUrl == null) {
                     try {
@@ -49,14 +56,18 @@ public class WebCrawlerService {
 
                 if (!visited.contains(currentUrl)) {
                     visited.add(currentUrl);
-                    crawl(currentUrl);
+                    CrawledPage page = crawl(currentUrl);
+                    if (page != null) {
+                        pages.add(page);
+                    }
                 }
             }
+            indexerService.buildIndex(pages);
             isCrawling = false;
         }).start();
     }
 
-    private void crawl(String currentUrl) {
+    private CrawledPage crawl(String currentUrl) {
         System.out.println("Crawling: " + currentUrl);
 
         try {
@@ -68,7 +79,7 @@ public class WebCrawlerService {
             String text = doc.body().text();
             String shortContent = text.length() > 200 ? text.substring(0, 200) + "..." : text;
 
-            saveToDatabase(currentUrl, title, shortContent, text);
+            CrawledPage page = saveToDatabase(currentUrl, title, shortContent, text);
 
             Elements links = doc.select("a[href]");
             for (Element link : links) {
@@ -77,12 +88,14 @@ public class WebCrawlerService {
                     queue.add(nextUrl);
                 }
             }
+            return page;
         } catch (Exception e) {
             System.err.println("Error crawling " + currentUrl + ": " + e.getMessage());
         }
+        return null;
     }
 
-    private void saveToDatabase(String url, String title, String shortContent, String text) {
+    private CrawledPage saveToDatabase(String url, String title, String shortContent, String text) {
         CrawledPage page = CrawledPage.builder()
                 .url(url)
                 .content(text)
@@ -91,6 +104,7 @@ public class WebCrawlerService {
                 .build();
         repository.save(page);
         System.out.println("Saved to Database - URL: " + url);
+        return page;
     }
 
     public boolean isValidUrl(String url) {

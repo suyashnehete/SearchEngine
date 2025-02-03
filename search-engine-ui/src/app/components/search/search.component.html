@@ -1,87 +1,121 @@
-<div class="search-container">
-  <h1>Search Engine</h1>
-  <input
-    type="text"
-    [(ngModel)]="query"
-    placeholder="Enter your query..."
-    (keyup.enter)="onSearch()"
-    (input)="onInputChange()"
-  />
-  <button (click)="onSearch()">Search</button>
-
-  <div *ngIf="suggestions.length > 0" class="suggestions">
-    <ul>
-      <li *ngFor="let suggestion of suggestions" (click)="setQuery(suggestion)">
-        {{ suggestion }}
-      </li>
-    </ul>
-  </div>
-  
-  <div class="results" *ngIf="searchResponse?.documents?.length">
-    <h2>Results:</h2>
-      <div *ngFor="let doc of searchResponse?.documents || []" class="result-item">
-        <h3>
-          <a [href]="doc.url" target="_blank">{{ doc.title }}</a>
-        </h3>
-        <p>{{ doc.shortContent }}</p>
+<div class="search-app container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <!-- Navigation Button -->
+      <div class="text-end mb-4">
+        <button
+          class="btn btn-outline-primary"
+          routerLink="/crawl"
+        >
+          <i class="fas fa-spider me-2"></i>
+          Go to Crawler
+        </button>
       </div>
-  </div>
 
-  <div *ngIf="searchResponse?.documents?.length === 0 && query.trim()">
-    <p>No results found.</p>
-  </div>
-</div>
+      <!-- Header -->
+      <header class="text-center my-5">
+        <h1 class="display-4 fw-bold text-primary mb-4">Search Engine</h1>
 
-<div
-  class="d-flex justify-content-center mt-3"
-  *ngIf="
-    searchResponse !== undefined &&
-    searchResponse?.documents?.length !== 0 &&
-    query.trim() !== ''
-  "
->
-  <nav aria-label="Page navigation example">
-    <ul class="pagination">
-      <li class="page-item" [class.disabled]="searchResponse.currentPage === 1">
-        <a class="page-link" (click)="goToFirstPage()"
-          ><i class="fa-solid fa-angles-left"></i
-        ></a>
-      </li>
-      <li class="page-item" [class.disabled]="searchResponse.currentPage === 1">
-        <a class="page-link" (click)="goToPreviousPage()"
-          ><i class="fa-solid fa-angle-left"></i
-        ></a>
-      </li>
-      <li
-        class="page-item"
-        *ngFor="
-          let _ of [].constructor(searchResponse.totalPages);
-          let i = index
-        "
-        [ngClass]="{ active: i === (searchResponse.currentPage || 1) - 1 }"
-      >
-        <a class="page-link" (click)="goToPage(i)">{{ i + 1 }}</a>
-      </li>
-      <li
-        class="page-item"
-        [class.disabled]="
-          searchResponse.currentPage === searchResponse.totalPages
-        "
-      >
-        <a class="page-link" (click)="goToNextPage()"
-          ><i class="fa-solid fa-chevron-right"></i
-        ></a>
-      </li>
-      <li
-        class="page-item"
-        [class.disabled]="
-          searchResponse.currentPage === searchResponse.totalPages
-        "
-      >
-        <a class="page-link" (click)="goToLastPage()"
-          ><i class="fa-solid fa-angles-right"></i
-        ></a>
-      </li>
-    </ul>
-  </nav>
+        <!-- Search Box -->
+        <div class="search-box position-relative">
+          <div class="input-group">
+            <input
+              (input)="onInputChange()"
+              (keyup.enter)="onSearch()"
+              [(ngModel)]="query"
+              class="form-control form-control-lg shadow-sm"
+              placeholder="What are you looking for?"
+              type="text"
+            />
+            <button
+              (click)="onSearch()"
+              class="btn btn-primary btn-lg"
+              type="button"
+            >
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+
+          <!-- Suggestions Dropdown -->
+          <div *ngIf="suggestions.length > 0" class="suggestions-dropdown">
+            <ul class="list-group">
+              <li
+                (click)="setQuery(suggestion)"
+                *ngFor="let suggestion of suggestions"
+                class="list-group-item suggestion-item"
+              >
+                <i class="fas fa-history text-muted me-2"></i>
+                {{ suggestion }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <!-- Results Section -->
+      <div class="search-results mt-4">
+        <!-- Results Count -->
+        <div *ngIf="searchResponse?.documents?.length" class="results-count mb-4">
+          <p class="text-muted">
+            Showing {{ searchResponse?.documents?.length }} results
+          </p>
+        </div>
+
+        <!-- Results List -->
+        <div class="results-list">
+          <div *ngFor="let doc of searchResponse?.documents || []" class="result-card">
+            <h3 class="result-title">
+              <a [href]="doc.url" class="text-decoration-none" target="_blank">
+                {{ doc.title }}
+                <i class="fas fa-external-link-alt ms-2"></i>
+              </a>
+            </h3>
+            <p class="result-content text-muted">{{ doc.shortContent }}</p>
+          </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div *ngIf="searchResponse?.documents?.length === 0 && query.trim()"
+             class="no-results text-center my-5">
+          <i class="fas fa-search fa-3x text-muted mb-3"></i>
+          <p class="lead">No results found for "{{ query }}"</p>
+          <p class="text-muted">Try different keywords or check your spelling</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <nav *ngIf="searchResponse !== undefined &&  searchResponse?.documents?.length && query.trim()"
+           class="d-flex justify-content-center mt-4 mb-5">
+        <ul class="pagination pagination-lg">
+          <li [class.disabled]="searchResponse.currentPage === 1" class="page-item">
+            <a (click)="goToFirstPage()" class="page-link">
+              <i class="fas fa-angle-double-left"></i>
+            </a>
+          </li>
+          <li [class.disabled]="searchResponse.currentPage === 1" class="page-item">
+            <a (click)="goToPreviousPage()" class="page-link">
+              <i class="fas fa-angle-left"></i>
+            </a>
+          </li>
+          <li *ngFor="let _ of [].constructor(searchResponse.totalPages); let i = index"
+              [class.active]="i === (searchResponse.currentPage || 1) - 1"
+              class="page-item">
+            <a (click)="goToPage(i)" class="page-link">{{ i + 1 }}</a>
+          </li>
+          <li [class.disabled]="searchResponse.currentPage === searchResponse.totalPages"
+              class="page-item">
+            <a (click)="goToNextPage()" class="page-link">
+              <i class="fas fa-angle-right"></i>
+            </a>
+          </li>
+          <li [class.disabled]="searchResponse.currentPage === searchResponse.totalPages"
+              class="page-item">
+            <a (click)="goToLastPage()" class="page-link">
+              <i class="fas fa-angle-double-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
 </div>

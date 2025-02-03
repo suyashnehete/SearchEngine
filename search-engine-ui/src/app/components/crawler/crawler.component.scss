@@ -1,14 +1,147 @@
-.crawl-container {
-    margin-top: 20px;
-    text-align: center;
+$primary-color: #4a90e2;
+$hover-color: darken($primary-color, 10%);
+$shadow-color: rgba(0, 0, 0, 0.1);
+$transition-speed: 0.3s;
+
+.crawler-page {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 2rem 1rem;
+
+  // Navigation button styles
+  .btn-outline-primary {
+    border-width: 2px;
+    border-radius: 8px;
+    padding: 0.5rem 1.2rem;
+    transition: all $transition-speed;
+
+    &:hover {
+      background-color: $primary-color;
+      border-color: $primary-color;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px $shadow-color;
+    }
   }
-  
-  .crawl-container input {
-    width: 80%;
-    padding: 10px;
-    margin-right: 10px;
+
+  // Rest of the styles remain the same
+  h1 {
+    color: $primary-color;
+    transition: color $transition-speed;
+
+    &:hover {
+      color: $hover-color;
+    }
   }
-  
-  .crawl-container button {
-    padding: 10px 20px;
+
+  .crawler-form {
+    .card {
+      border: none;
+      border-radius: 16px;
+      transition: transform $transition-speed, box-shadow $transition-speed;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px $shadow-color;
+      }
+    }
+
+    .input-group {
+      .input-group-text {
+        border: none;
+        background-color: #f8f9fa;
+        color: #6c757d;
+      }
+
+      .form-control {
+        border: none;
+        border-left: 1px solid #dee2e6;
+
+        &:focus {
+          box-shadow: none;
+          border-color: $primary-color;
+        }
+      }
+
+      .btn {
+        padding-left: 2rem;
+        padding-right: 2rem;
+
+        &:hover:not(:disabled) {
+          background-color: $hover-color;
+        }
+
+        &:disabled {
+          opacity: 0.7;
+        }
+      }
+    }
   }
+
+  // Advanced options
+  .advanced-options {
+    .btn-link {
+      color: #6c757d;
+
+      &:hover {
+        color: $primary-color;
+      }
+
+      .fa-chevron-down {
+        transition: transform $transition-speed;
+      }
+
+      &[aria-expanded="true"] {
+        .fa-chevron-down {
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    .card-body {
+      border-radius: 12px;
+    }
+  }
+
+  // Status section
+  .crawl-status {
+    .card {
+      border-radius: 16px;
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 4px;
+      background-color: rgba($primary-color, 0.1);
+
+      .progress-bar {
+        background-color: $primary-color;
+      }
+    }
+
+    .spinner-border {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+
+  // Form elements
+  .form-select,
+  .form-control {
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 0.25rem rgba($primary-color, 0.25);
+    }
+  }
+
+  .form-check-input {
+    &:checked {
+      background-color: $primary-color;
+      border-color: $primary-color;
+    }
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 0.25rem rgba($primary-color, 0.25);
+    }
+  }
+}

@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { CrawlerComponent } from './crawler.component';
+import {CrawlerComponent} from './crawler.component';
 
 describe('CrawlerComponent', () => {
   let component: CrawlerComponent;
@@ -8,9 +8,9 @@ describe('CrawlerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CrawlerComponent ]
+      declarations: [CrawlerComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(CrawlerComponent);
     component = fixture.componentInstance;

@@ -1,9 +1,54 @@
-<div class="crawl-container">
-  <h2>Submit Website for Crawling</h2>
-  <input
-    type="text"
-    [(ngModel)]="crawlUrl"
-    placeholder="Enter website URL..."
-  />
-  <button (click)="onSubmitUrl()">Submit</button>
+<div class="crawler-page container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <!-- Navigation Button -->
+      <div class="text-end mb-4">
+        <button
+          class="btn btn-outline-primary"
+          routerLink="/"
+        >
+          <i class="fas fa-search me-2"></i>
+          Go to Search
+        </button>
+      </div>
+
+      <!-- Header -->
+      <header class="text-center my-5">
+        <h1 class="display-4 fw-bold text-primary mb-4">Website Crawler</h1>
+        <p class="lead text-muted mb-5">Submit a website URL to index its content</p>
+      </header>
+
+      <div class="crawler-form">
+        <div class="card shadow-sm">
+          <div class="card-body p-4">
+            <!-- URL Input -->
+            <div class="mb-4">
+              <label class="form-label">Website URL</label>
+              <div class="input-group input-group-lg">
+                <span class="input-group-text bg-light">
+                  <i class="fas fa-globe"></i>
+                </span>
+                <input
+                  [(ngModel)]="crawlUrl"
+                  class="form-control form-control-lg"
+                  placeholder="https://example.com"
+                  type="url"
+                />
+                <button
+                  (click)="onSubmitUrl()"
+                  class="btn btn-primary btn-lg px-4"
+                >
+                  <i class="fas fa-spider me-2"></i>
+                  Submit
+                </button>
+              </div>
+              <div *ngIf="!crawlUrl" class="form-text">
+                Enter the complete URL including http:// or https://
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

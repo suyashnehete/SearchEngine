@@ -13,11 +13,6 @@ public class LRUCache<K, V> {
     private final ScheduledExecutorService scheduler;
     private final ReentrantLock lock = new ReentrantLock();
 
-    public enum ExpirationPolicy {
-        AFTER_WRITE,
-        AFTER_ACCESS
-    }
-
     public LRUCache(int capacity, long ttlInMinutes, ExpirationPolicy policy) {
         this.capacity = capacity;
         this.map = new ConcurrentHashMap<>();
@@ -110,6 +105,32 @@ public class LRUCache<K, V> {
         }
     }
 
+    public void shutdown() {
+        scheduler.shutdown();
+    }
+
+    public Map<K, V> getAllCache() {
+        lock.lock();
+        try {
+            Map<K, V> cache = new LinkedHashMap<>();
+
+            for (Map.Entry<K, Node<K, V>> mapEntry : map.entrySet()) {
+                K key = mapEntry.getKey();
+                V value = get(key);
+
+                cache.put(key, value);
+            }
+            return cache;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public enum ExpirationPolicy {
+        AFTER_WRITE,
+        AFTER_ACCESS
+    }
+
     private static class Node<K, V> {
         K key;
         V value;
@@ -160,27 +181,6 @@ public class LRUCache<K, V> {
             node.prev = null;
             node.next = null;
             return node;
-        }
-    }
-
-    public void shutdown() {
-        scheduler.shutdown();
-    }
-
-    public Map<K, V> getAllCache() {
-        lock.lock();
-        try {
-            Map<K, V> cache = new LinkedHashMap<>();
-
-            for (Map.Entry<K, Node<K, V>> mapEntry : map.entrySet()) {
-                K key = mapEntry.getKey();
-                V value = get(key);
-
-                cache.put(key, value);
-            }
-            return cache;
-        } finally {
-            lock.unlock();
         }
     }
 }
