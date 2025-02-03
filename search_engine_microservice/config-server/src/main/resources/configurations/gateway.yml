@@ -1,0 +1,37 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: false
+    fetch-registry: false
+  instance:
+    hostname: localhost
+
+spring:
+    application:
+        name: gateway
+    web:
+        resources:
+            add-mappings: false
+    cloud:
+        gateway:
+            mvc:
+                discovery:
+                    locator:
+                        enabled: true
+                routes:
+                    -   id: crawler
+                        uri: http://localhost:8090
+                        predicates:
+                            -   Path=/api/v1/crawler/**
+                    -   id: indexer
+                        uri: http://localhost:8091
+                        predicates:
+                            -   Path=/api/v1/indexer/**
+                    -   id: query
+                        uri: http://localhost:8092
+                        predicates:
+                            -   Path=/api/v1/search/**, /api/v1/suggestions/**, /api/v1/log/**
+
+server:
+    port: 8222

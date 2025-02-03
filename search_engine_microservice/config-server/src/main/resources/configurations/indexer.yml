@@ -1,0 +1,37 @@
+eureka:
+    instance:
+        hostname: localhost
+    client:
+        serviceUrl:
+            defaultZone: http://localhost:8761/eureka/
+
+server:
+    port: 8091
+    servlet:
+        context-path: /api/v1
+
+spring:
+    application:
+        name: indexer
+    servlet:
+        multipart:
+            max-file-size: 50MB
+    datasource:
+        url: jdbc:postgresql://localhost:5432/search_engine
+        username: admin
+        password: admin
+        driver-class-name: org.postgresql.Driver
+    jpa:
+        hibernate:
+            ddl-auto: update
+        show-sql: false
+        properties:
+            hibernate:
+                format_sql: true
+        database: postgresql
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+application:
+    config:
+        crawler:
+            url: http://localhost:8222/api/v1/crawler

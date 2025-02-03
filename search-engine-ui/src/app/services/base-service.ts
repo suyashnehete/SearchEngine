@@ -7,7 +7,8 @@ import {Observable} from "rxjs";
 })
 export class BaseService {
 
-  private apiUrl = 'http://localhost:8080/api/v1/';
+  private apiUrl = 'http://localhost:8222/api/v1/'; // microservice url
+  //private apiUrl = 'http://localhost:8080/api/v1/'; // monolith url
 
   constructor(
     private http: HttpClient
