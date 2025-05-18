@@ -22,6 +22,8 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
+import com.suyash.se.indexer.crawler.CrawledPage;
+
 
 @Configuration
 public class KafkaConfig {
@@ -60,7 +62,11 @@ public class KafkaConfig {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         props.put(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, maxSize);
         props.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, maxSize);
-        return new DefaultKafkaConsumerFactory<>(props);
+        return new DefaultKafkaConsumerFactory<>(
+            props,
+            new StringDeserializer(),
+            new JsonDeserializer<>()
+        );
     }
 
     @Bean
