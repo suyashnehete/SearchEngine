@@ -2,6 +2,8 @@ package com.suyash.se.query.suggestions.utils;
 
 import java.util.*;
 
+import org.springframework.stereotype.Component;
+
 public class NGramModel {
     private final Map<String, Map<String, Integer>> nGramMap = new HashMap<>();
     private final int n;

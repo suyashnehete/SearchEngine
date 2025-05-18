@@ -357,7 +357,7 @@ public class QueryService {
         allQueries.addAll(getSuggestionsTrie(query));
         SearchResponse results = processQuery(query, topK, page, size);
 
-        if (!results.documents().isEmpty()) {
+        if (!results.documents.isEmpty()) {
             return results;
         }
 

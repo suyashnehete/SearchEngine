@@ -12,6 +12,7 @@ import com.suyash.se.query.query.QueryService;
 
 import lombok.RequiredArgsConstructor;
 
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("log")

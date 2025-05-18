@@ -5,7 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
 
+@Component
 public class Trie {
     private final TrieNode root = new TrieNode();
 

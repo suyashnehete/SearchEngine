@@ -1,5 +1,7 @@
 package com.suyash.se.query.suggestions.utils;
 
+import org.springframework.stereotype.Component;
+
 public class EditDistance {
     public static int calculate(String s1, String s2) {
         int m = s1.length();

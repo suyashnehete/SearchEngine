@@ -16,7 +16,7 @@ public class JsonbMapConverter implements AttributeConverter<Map<Integer, Double
     @Override
     public String convertToDatabaseColumn(Map<Integer, Double> map) {
         try {
-            return objectMapper.writeValueAsString(map);  // Convert to JSON string
+            return objectMapper.writeValueAsString(map); // Convert to JSON string
         } catch (IOException e) {
             throw new RuntimeException("Error converting map to JSON", e);
         }

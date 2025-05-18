@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.suyash.se.crawler.indexer.IndexerClient;
@@ -22,7 +23,7 @@ public class WebCrawlerService {
 
     private final CrawledPageRepository repository;
     private final IndexerClient indexerClient;
-
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     private Queue<String> queue = new ConcurrentLinkedQueue<>();
     private HashSet<String> visited = new HashSet<>();
     private boolean isCrawling = false;
@@ -66,7 +67,8 @@ public class WebCrawlerService {
     }
 
     private void buildIndex(List<CrawledPage> pages) {
-       indexerClient.buildIndex(pages);
+        kafkaTemplate.send("crawled_pages", pages); // Send to Kafka topic
+        // indexerClient.buildIndex(pages);
     }
 
     private CrawledPage crawl(String currentUrl) {

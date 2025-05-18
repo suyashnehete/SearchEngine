@@ -4,7 +4,12 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.springframework.stereotype.Component;
+
+import jakarta.annotation.PreDestroy;
+
 public class LRUCache<K, V> {
+
     private final int capacity;
     private final Map<K, Node<K, V>> map;
     private final DoublyLinkedList<K, V> list;
@@ -105,6 +110,7 @@ public class LRUCache<K, V> {
         }
     }
 
+    @PreDestroy
     public void shutdown() {
         scheduler.shutdown();
     }
@@ -183,4 +189,5 @@ public class LRUCache<K, V> {
             return node;
         }
     }
+
 }
