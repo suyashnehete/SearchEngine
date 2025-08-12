@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
 
-import com.suyash.se.query.cache.LRUCacheService;
+import com.suyash.se.query.cache.RedisCacheService;
 import com.suyash.se.query.crawler.CrawledPage;
 import com.suyash.se.query.crawler.CrawlerClient;
 import com.suyash.se.query.indexer.IndexerClient;
@@ -24,38 +24,69 @@ import com.suyash.se.query.suggestions.utils.NGramModel;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class QueryService {
 
     private final CrawlerClient crawlerClient;
     private final IndexerClient indexerClient;
-    private final LRUCacheService<String, List<Integer>> cacheService;
+    private final RedisCacheService<String, List<Integer>> cacheService;
 
     private static final Pattern WORD_PATTERN = Pattern.compile("\\w+");
     private static final Set<String> STOP_WORDS = Set.of("the", "and", "is", "in", "to", "of", "a", "for");
-    
+
     private Trie queryTrie = new Trie();
     private NGramModel nGramModel = new NGramModel(2);
-    private Map<String, List<String>> userSearchHistory = new HashMap<>();
+    private final Map<String, List<String>> userSearchHistory = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final int MAX_HISTORY_PER_USER = 100;
+    private static final int MAX_USERS = 10000;
     private AtomicInteger queryCount = new AtomicInteger(0);
     private AtomicInteger cacheHitCount = new AtomicInteger(0);
 
     // Populate Trie with frequent queries from cache
     @PostConstruct
     public void populateTrie() {
-        cacheService.asMap().keySet().forEach(queryTrie::insert);
+        try {
+            cacheService.asMap().keySet().forEach(queryTrie::insert);
+            log.info("Populated query trie with {} entries", cacheService.asMap().size());
+        } catch (Exception e) {
+            log.error("Error populating trie: {}", e.getMessage());
+        }
     }
 
     @PostConstruct
     public void trainNGramModel() {
-        List<String> frequentQueries = new ArrayList<>(cacheService.asMap().keySet());
-        nGramModel.train(frequentQueries);
+        try {
+            List<String> frequentQueries = new ArrayList<>(cacheService.asMap().keySet());
+            nGramModel.train(frequentQueries);
+            log.info("Trained N-gram model with {} queries", frequentQueries.size());
+        } catch (Exception e) {
+            log.error("Error training N-gram model: {}", e.getMessage());
+        }
     }
 
     public void logUserQuery(String userId, String query) {
+        if (userId == null || query == null) {
+            return;
+        }
+
+        // Limit total number of users to prevent memory issues
+        if (userSearchHistory.size() >= MAX_USERS && !userSearchHistory.containsKey(userId)) {
+            log.warn("Maximum number of users reached ({}), not storing history for new user: {}", MAX_USERS, userId);
+            return;
+        }
+
         userSearchHistory.computeIfAbsent(userId, k -> new ArrayList<>()).add(query);
+
+        // Limit history per user
+        List<String> history = userSearchHistory.get(userId);
+        if (history.size() > MAX_HISTORY_PER_USER) {
+            // Remove oldest entries
+            history.subList(0, history.size() - MAX_HISTORY_PER_USER).clear();
+        }
     }
 
     public List<String> getContextAwareSuggestions(String userId, String prefix) {
@@ -84,13 +115,12 @@ public class QueryService {
     }
 
     public List<Integer> processQuery(String query, int topK) {
-
         queryCount.incrementAndGet();
 
         // Check cache first
         List<Integer> cachedResults = cacheService.getIfPresent(query);
         if (cachedResults != null) {
-            System.out.println("Cache hit for query: " + query);
+            log.debug("Cache hit for query: {}", query);
             cacheHitCount.incrementAndGet();
             return cachedResults;
         }
@@ -205,13 +235,12 @@ public class QueryService {
     }
 
     public List<Integer> processQueryWithRanking(String query, int topK) {
-
         queryCount.incrementAndGet();
 
         // Check cache first
         List<Integer> cachedResults = cacheService.getIfPresent(query);
         if (cachedResults != null) {
-            System.out.println("Cache hit for query: " + query);
+            log.debug("Cache hit for query: {}", query);
             cacheHitCount.incrementAndGet();
             return cachedResults;
         }
@@ -256,26 +285,31 @@ public class QueryService {
         return rankedResults;
     }
 
-    private int countOccurrences(String content, String term) {
-        int count = 0;
-        int index = 0;
-        while ((index = content.indexOf(term, index)) != -1) {
-            count++;
-            index += term.length();
-        }
-        return count;
-    }
-
     private List<Integer> frequencyRankedDocuments(Set<Integer> docIds, Map<Integer, Double> docScores, int topK) {
         if (docIds == null) {
             return Collections.emptyList();
         }
+
+        // Pre-fetch all page rank scores to avoid N+1 query problem
+        Map<Integer, Double> pageRankScores = new HashMap<>();
+        for (Integer docId : docIds) {
+            try {
+                CrawledPage page = crawlerClient.findById((long) docId).orElse(null);
+                if (page != null) {
+                    pageRankScores.put(docId, page.getPageRankScore());
+                } else {
+                    pageRankScores.put(docId, 0.0);
+                }
+            } catch (Exception e) {
+                log.warn("Error fetching page rank for document {}: {}", docId, e.getMessage());
+                pageRankScores.put(docId, 0.0);
+            }
+        }
+
         return docIds.stream()
                 .sorted((id1, id2) -> {
-                    double score1 = docScores.getOrDefault(id1, 0.0)
-                            + crawlerClient.findById((long) id1).orElse(null).getPageRankScore();
-                    double score2 = docScores.getOrDefault(id2, 0.0)
-                            + crawlerClient.findById((long) id2).orElse(null).getPageRankScore();
+                    double score1 = docScores.getOrDefault(id1, 0.0) + pageRankScores.getOrDefault(id1, 0.0);
+                    double score2 = docScores.getOrDefault(id2, 0.0) + pageRankScores.getOrDefault(id2, 0.0);
                     return Double.compare(score2, score1);
                 })
                 .limit(topK)
@@ -381,11 +415,8 @@ public class QueryService {
         List<String> topQueries = corrections.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue())
                 .limit(topK)
-                .map(entry -> {
-                    return entry.getKey();
-                })
+                .map(Map.Entry::getKey)
                 .toList();
         return processMultipleQuery(topQueries, topK, page, size);
     }
-
 }

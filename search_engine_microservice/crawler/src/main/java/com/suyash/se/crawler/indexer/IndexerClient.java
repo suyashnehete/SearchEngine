@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.suyash.se.crawler.crawler.CrawledPage;
 
-@FeignClient(name = "indexer", url = "${application.config.indexer.url}")
+@FeignClient(name = "indexer")
 public interface IndexerClient {
 
     @PostMapping

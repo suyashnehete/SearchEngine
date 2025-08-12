@@ -1,13 +1,39 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>SearchEngineUi</title>
-  <base href="/">
-  <meta content="width=device-width, initial-scale=1" name="viewport">
-  <link href="favicon.ico" rel="icon" type="image/x-icon">
-</head>
-<body>
-<app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Search Engine</title>
+    <base href="/" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <link href="favicon.ico" rel="icon" type="image/x-icon" />
+
+    <!-- Security Headers -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; 
+                 script-src 'self' 'unsafe-inline'; 
+                 style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; 
+                 font-src 'self' https://cdnjs.cloudflare.com; 
+                 img-src 'self' data: https:; 
+                 connect-src 'self' http://localhost:8222 ws://localhost:4200;"
+    />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta
+      http-equiv="Referrer-Policy"
+      content="strict-origin-when-cross-origin"
+    />
+
+    <!-- SEO and Accessibility -->
+    <meta
+      name="description"
+      content="Advanced search engine with web crawling capabilities"
+    />
+    <meta name="keywords" content="search, engine, crawler, web, indexing" />
+    <meta name="author" content="Search Engine Team" />
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
 </html>

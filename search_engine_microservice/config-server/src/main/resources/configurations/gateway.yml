@@ -2,8 +2,8 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
-    register-with-eureka: false
-    fetch-registry: false
+    register-with-eureka: true
+    fetch-registry: true
   instance:
     hostname: localhost
 
@@ -21,15 +21,15 @@ spring:
                         enabled: true
                 routes:
                     -   id: crawler
-                        uri: http://localhost:8090
+                        uri: lb://crawler
                         predicates:
                             -   Path=/api/v1/crawler/**
                     -   id: indexer
-                        uri: http://localhost:8091
+                        uri: lb://indexer
                         predicates:
                             -   Path=/api/v1/indexer/**
                     -   id: query
-                        uri: http://localhost:8092
+                        uri: lb://query
                         predicates:
                             -   Path=/api/v1/search/**, /api/v1/suggestions/**, /api/v1/log/**
 

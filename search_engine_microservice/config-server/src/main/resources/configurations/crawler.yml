@@ -17,10 +17,17 @@ spring:
         multipart:
             max-file-size: 50MB
     datasource:
-        url: jdbc:postgresql://localhost:5432/search_engine
-        username: admin
-        password: admin
+        url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:search_engine}
+        username: ${DB_USERNAME:admin}
+        password: ${DB_PASSWORD:admin}
         driver-class-name: org.postgresql.Driver
+        hikari:
+            maximum-pool-size: 20
+            minimum-idle: 5
+            idle-timeout: 300000
+            connection-timeout: 20000
+            max-lifetime: 1200000
+            leak-detection-threshold: 60000
     jpa:
         hibernate:
             ddl-auto: update
@@ -28,6 +35,17 @@ spring:
         properties:
             hibernate:
                 format_sql: true
+                jdbc:
+                    batch_size: 25
+                    order_inserts: true
+                    order_updates: true
+                connection:
+                    provider_disables_autocommit: true
+                cache:
+                    use_second_level_cache: true
+                    use_query_cache: true
+                    region:
+                        factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
         database: postgresql
         database-platform: org.hibernate.dialect.PostgreSQLDialect
     kafka:
@@ -40,10 +58,55 @@ spring:
             value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 
 kafka:
-    bootstrap-servers: localhost:9092
-    max-size: 52428800
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    max-size: ${KAFKA_MAX_MESSAGE_SIZE:10485760}  # 10MB default
+    producer:
+        batch-size: ${KAFKA_PRODUCER_BATCH_SIZE:32768}
+        linger-ms: ${KAFKA_PRODUCER_LINGER_MS:10}
+        compression-type: ${KAFKA_PRODUCER_COMPRESSION:snappy}
+    consumer:
+        group-id: crawler-service-group
+        max-poll-records: ${KAFKA_CONSUMER_MAX_POLL_RECORDS:10}
 
-application:
-    config:
-        indexer:
-            url: http://localhost:8222/api/v1/indexer
+redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
+    database: 1
+    jedis:
+        pool:
+            max-active: 8
+            max-idle: 8
+            min-idle: 0
+            max-wait: -1ms
+
+# Actuator configuration for health checks and metrics
+management:
+    endpoints:
+        web:
+            exposure:
+                include: health,info,metrics,prometheus,circuitbreakers
+    endpoint:
+        health:
+            show-details: always
+            show-components: always
+    health:
+        circuitbreakers:
+            enabled: true
+        redis:
+            enabled: true
+    metrics:
+        export:
+            prometheus:
+                enabled: true
+        distribution:
+            percentiles-histogram:
+                http.server.requests: true
+            percentiles:
+                http.server.requests: 0.5, 0.95, 0.99
+
+# Rate limiting configuration
+crawler:
+    rate-limit:
+        requests-per-minute: 60
+        requests-per-domain: 10

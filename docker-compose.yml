@@ -3,10 +3,10 @@ services:
     container_name: postgres-search-engine
     image: postgres
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: ${DB_USERNAME:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin}
       PGDATA: /var/lib/postgresql/data
-      POSTGRES_DB: search_engine
+      POSTGRES_DB: ${DB_NAME:-search_engine}
     volumes:
       - postgres:/data/postgres
     ports:
@@ -28,22 +28,76 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
+      - "9093:9093" # Additional port for internal communication
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+
+      # Replication and Durability
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_REPLICA_FETCH_MAX_BYTES: 52428800
-      KAFKA_PRODUCER_MAX_REQUEST_SIZE: 52428800
-      KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES: 52428800
-      CONNECT_PRODUCER_MAX_REQUEST_SIZE: 52428800
-      CONNECT_CONSUMER_MAX_PARTITION_FETCH_BYTES: 52428800
-      KAFKA_MESSAGE_MAX_BYTES: 52428800
-    
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+
+      # Performance Tuning
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_COMPRESSION_TYPE: snappy
+      KAFKA_LOG_CLEANUP_POLICY: delete
+      KAFKA_LOG_RETENTION_HOURS: 168 # 7 days
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824 # 1GB
+
+      # Message Size Configuration
+      KAFKA_MESSAGE_MAX_BYTES: 10485760 # 10MB (reduced from 50MB)
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 10485760
+      KAFKA_PRODUCER_MAX_REQUEST_SIZE: 10485760
+      KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES: 10485760
+
+      # JVM Performance
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms512M"
+      KAFKA_JVM_PERFORMANCE_OPTS: "-server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35"
+
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - search-engine-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "kafka-topics",
+          "--bootstrap-server",
+          "localhost:9092",
+          "--list",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    container_name: redis-search-engine
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - search-engine-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
 networks:
   search-engine-network:
     driver: bridge
 
 volumes:
   postgres:
+    driver: local
+  redis_data:
+    driver: local
+  kafka_data:
     driver: local
