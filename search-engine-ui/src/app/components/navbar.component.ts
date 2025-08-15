@@ -1,0 +1,84 @@
+import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../auth/auth.service';
+import { Observable } from 'rxjs';
+
+@Component({
+  selector: 'app-navbar',
+  template: `
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <a class="navbar-brand" routerLink="/">
+          <i class="fas fa-search me-2"></i>
+          Search Engine
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                <i class="fas fa-home me-1"></i>
+                Search
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/crawl" routerLinkActive="active">
+                <i class="fas fa-plus me-1"></i>
+                Submit URL
+              </a>
+            </li>
+            <li class="nav-item" *ngIf="authService.isAdmin()">
+              <a class="nav-link" routerLink="/admin" routerLinkActive="active">
+                <i class="fas fa-cogs me-1"></i>
+                Admin Panel
+              </a>
+            </li>
+          </ul>
+          
+          <ul class="navbar-nav">
+            <li class="nav-item" *ngIf="!(isAuthenticated$ | async)">
+              <a class="nav-link" routerLink="/login">
+                <i class="fas fa-sign-in-alt me-1"></i>
+                Login
+              </a>
+            </li>
+            <li class="nav-item dropdown" *ngIf="isAuthenticated$ | async">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                <i class="fas fa-user me-1"></i>
+                {{ authService.userClaims?.preferred_username || 'User' }}
+              </a>
+              <ul class="dropdown-menu">
+                <li><span class="dropdown-item-text">
+                  <small class="text-muted">Roles: {{ (userRoles$ | async)?.join(', ') }}</small>
+                </span></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" (click)="logout()">
+                  <i class="fas fa-sign-out-alt me-1"></i>
+                  Logout
+                </a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  `
+})
+export class NavbarComponent implements OnInit {
+  isAuthenticated$: Observable<boolean>;
+  userRoles$: Observable<string[]>;
+
+  constructor(public authService: AuthService) {
+    this.isAuthenticated$ = this.authService.isAuthenticated$;
+    this.userRoles$ = this.authService.userRoles$;
+  }
+
+  ngOnInit() { }
+
+  logout() {
+    this.authService.logout();
+  }
+}

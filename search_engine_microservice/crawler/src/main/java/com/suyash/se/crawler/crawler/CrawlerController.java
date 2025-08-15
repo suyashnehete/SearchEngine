@@ -76,4 +76,46 @@ public class CrawlerController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @GetMapping("/findAll")
+    public ResponseEntity<java.util.List<CrawledPage>> findAllPages() {
+        try {
+            java.util.List<CrawledPage> pages = crawledPageRepository.findAll();
+            return ResponseEntity.ok(pages);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // Admin endpoints
+    @PostMapping("/admin/start")
+    public ResponseEntity<String> startCrawler() {
+        // Start crawler service
+        webCrawlerService.startCrawling();
+        return ResponseEntity.ok("Crawler service started");
+    }
+
+    @PostMapping("/admin/stop")
+    public ResponseEntity<String> stopCrawler() {
+        // Stop crawler service
+        webCrawlerService.stopCrawling();
+        return ResponseEntity.ok("Crawler service stopped");
+    }
+
+    @GetMapping("/admin/queue")
+    public ResponseEntity<Map<String, Object>> getCrawlerQueue() {
+        // Return crawler queue status
+        Map<String, Object> queueInfo = webCrawlerService.getQueueStatus();
+        return ResponseEntity.ok(queueInfo);
+    }
+
+    @GetMapping("/admin/stats")
+    public ResponseEntity<Map<String, Object>> getCrawlerStats() {
+        // Return crawler statistics
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalPagesCrawled", crawledPageRepository.count());
+        stats.put("queueSize", webCrawlerService.getQueueSize());
+        stats.put("isRunning", webCrawlerService.isRunning());
+        return ResponseEntity.ok(stats);
+    }
 }

@@ -90,6 +90,23 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
 
+  auth-server:
+    container_name: auth-server
+    build:
+      context: ./search_engine_microservice/auth-server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_USERNAME=${DB_USERNAME:-admin}
+      - DB_PASSWORD=${DB_PASSWORD:-admin}
+      - DB_NAME=${DB_NAME:-search_engine}
+    depends_on:
+      - postgres
+    networks:
+      - search-engine-network
+    restart: unless-stopped
+
 networks:
   search-engine-network:
     driver: bridge

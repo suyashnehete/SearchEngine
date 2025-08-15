@@ -226,4 +226,27 @@ public class WebCrawlerService {
     public boolean isValidUrl(String url) {
         return url != null && (url.startsWith("http://") || url.startsWith("https://"));
     }
+
+    // Admin methods
+    public void stopCrawling() {
+        isCrawling = false;
+        log.info("Crawler service stopped by admin");
+    }
+
+    public boolean isRunning() {
+        return isCrawling;
+    }
+
+    public long getQueueSize() {
+        return urlTrackingService.getQueueSize();
+    }
+
+    public java.util.Map<String, Object> getQueueStatus() {
+        java.util.Map<String, Object> status = new java.util.HashMap<>();
+        status.put("queueSize", urlTrackingService.getQueueSize());
+        status.put("visitedCount", urlTrackingService.getVisitedCount());
+        status.put("isRunning", isCrawling);
+        status.put("crawlerInstanceId", crawlerInstanceId);
+        return status;
+    }
 }

@@ -18,6 +18,9 @@ public interface CrawlerClient {
     Boolean save(@RequestBody CrawledPage page);
 
     @GetMapping("/findById/{id}")
-    Optional<CrawledPage> findById(@PathVariable(name = "id") long id);
+    Optional<CrawledPage> findById(@PathVariable("id") long id);
+
+    @GetMapping("/findAll")
+    java.util.List<CrawledPage> findAllPages();
 
 }

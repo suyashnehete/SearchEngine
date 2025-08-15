@@ -92,7 +92,7 @@ public class IndexerService {
     }
 
     private void saveTfIdfToDatabase(Map<String, Map<Integer, Integer>> termFrequencyMap,
-                                     Map<String, Integer> documentFrequencyMap, int totalDocuments) {
+            Map<String, Integer> documentFrequencyMap, int totalDocuments) {
         for (Map.Entry<String, Map<Integer, Integer>> entry : termFrequencyMap.entrySet()) {
             String word = entry.getKey();
             Map<Integer, Integer> tfMap = entry.getValue();
@@ -123,22 +123,49 @@ public class IndexerService {
         }
     }
 
-    // private void saveToDatabase(Map<String, Set<Integer>> invertedIndexMap) {
-    //     for (Map.Entry<String, Set<Integer>> entry : invertedIndexMap.entrySet()) {
-    //         String word = entry.getKey();
-    //         List<Integer> documentIds = new ArrayList<>(entry.getValue());
+    // Admin operations
+    public void reindexAll() {
+        // Clear existing index
+        clearIndex();
+        
+        // Fetch all crawled pages and rebuild index
+        List<CrawledPage> allPages = crawlerClient.findAllPages();
+        if (!allPages.isEmpty()) {
+            buildIndex(allPages);
+        }
+    }
 
-    //         InvertedIndex index = invertedIndexRepository.findByWord(word);
-    //         if (index == null) {
-    //             index = InvertedIndex.builder()
-    //                     .word(word)
-    //                     .documentIds(documentIds)
-    //                     .build();
-    //         } else {
-    //             index.getDocumentIds().addAll(documentIds);
-    //         }
-    //         invertedIndexRepository.save(index);
-    //     }
-    // }
+    public void optimizeIndex() {
+        // Remove duplicate entries and optimize storage
+        List<InvertedIndex> allIndices = invertedIndexRepository.findAll();
+        for (InvertedIndex index : allIndices) {
+            // Remove duplicates from document IDs
+            Set<Integer> uniqueDocIds = new HashSet<>(index.getDocumentIds());
+            index.setDocumentIds(new ArrayList<>(uniqueDocIds));
+            invertedIndexRepository.save(index);
+        }
+    }
+
+    public void clearIndex() {
+        // Delete all index entries
+        invertedIndexRepository.deleteAll();
+    }
+
+    public Map<String, Object> getIndexStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+
+        long totalTerms = invertedIndexRepository.count();
+        List<InvertedIndex> allIndices = invertedIndexRepository.findAll();
+
+        int totalDocuments = allIndices.stream()
+                .mapToInt(index -> index.getDocumentIds().size())
+                .sum();
+
+        stats.put("totalTerms", totalTerms);
+        stats.put("totalDocuments", totalDocuments);
+        stats.put("averageDocumentsPerTerm", totalTerms > 0 ? (double) totalDocuments / totalTerms : 0);
+
+        return stats;
+    }
 
 }
