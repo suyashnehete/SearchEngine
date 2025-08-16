@@ -1,0 +1,194 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+.kiro/
+*.swp
+*.swo
+*~
+
+# Node.js / Angular
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+.angular/
+coverage/
+.nyc_output/
+
+# Java / Maven
+target/
+*.jar
+*.war
+*.ear
+*.class
+.mvn/
+mvnw
+mvnw.cmd
+
+# Spring Boot
+application-*.properties
+application-*.yml
+!application.properties
+!application.yml
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Docker
+.dockerignore
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+
+# Build artifacts
+*.tgz
+*.tar.gz# D
+evelopment environment
+.env.dev
+
+# SonarQube
+.sonar/
+
+# Security scan results
+trivy-results.sarif
+
+# Test results
+test-results/
+junit.xml
+
+# Code quality reports
+checkstyle-result.xml
+spotbugsXml.xml
+
+# Husky
+.husky/_
+
+# VS Code specific (allow some config files)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Additional Maven artifacts
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# Additional Node.js artifacts
+.npm
+.eslintcache
+*.tsbuildinfo
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage reports
+*.lcov
+
+# Angular specific
+out-tsc/
+bazel-out/
+.sass-cache/
+connect.lock
+libpeerconnection.log
+testem.log
+typings/
+
+# Gradle (if used)
+.gradle
+!gradle/wrapper/gradle-wrapper.jar
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+
+# IntelliJ IDEA
+*.iws
+*.iml
+*.ipr
+out/
+
+# Package managers
+.yarn-integrity
+bower_components
+jspm_packages/
+
+# Parcel
+.cache
+.parcel-cache
+
+# Next.js
+.next
+
+# Nuxt.js
+.nuxt
+
+# Gatsby
+.cache/
+public
+
+# Storybook
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
