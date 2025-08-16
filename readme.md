@@ -2,18 +2,18 @@
 
 ## 📋 Overview
 
-A comprehensive **microservices-based search engine** with **OAuth2 authentication**, **JWT tokens**, and **Role-Based Access Control (RBAC)**. The system intelligently crawls web pages, indexes content using TF-IDF and PageRank algorithms, and provides secure search functionality with granular admin controls.
+A **microservices-based search engine** with **OAuth2 authentication**, **JWT tokens**, and **Role-Based Access Control (RBAC)**. The system crawls web pages, indexes content using TF-IDF algorithms, and provides secure search functionality with admin controls.
 
 ### 🎯 Key Features
 
 - **🔐 OAuth2 + JWT Authentication** - Secure login with role-based access control
-- **👥 Role-Based Permissions** - Admin vs User access levels with granular controls
-- **🕷️ Intelligent Web Crawling** - Smart content discovery with rate limiting and politeness
-- **📚 Advanced Indexing** - TF-IDF scoring with PageRank algorithm for relevance ranking
-- **🔍 Fast Search** - Optimized query processing with caching and suggestions
+- **👥 Role-Based Permissions** - Admin vs User access levels
+- **🕷️ Web Crawling** - Content discovery and extraction
+- **📚 Content Indexing** - TF-IDF scoring for relevance ranking
+- **🔍 Search Functionality** - Query processing with result ranking
 - **🎨 Modern Angular UI** - Responsive design with role-based navigation
-- **📊 Admin Dashboard** - Comprehensive system monitoring and control panel
-- **🐳 Production Ready** - Docker containerization with health checks and monitoring
+- **📊 Admin Dashboard** - System monitoring and control panel
+- **🐳 Docker Support** - Containerized development environment
 
 ## 🏗️ System Architecture
 
@@ -96,21 +96,17 @@ Ensure you have the following installed:
 - **🅰️ Angular CLI** - For Angular build tools
 - **🐳 Docker & Docker Compose** - For containerization
 
-### ⚡ One-Command Setup
+### ⚡ Development Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/suyashnehete/SearchEngine.git
 cd SearchEngine
 
-# Validate the setup
-./validate-setup.sh
+# Start infrastructure services
+docker-compose up -d
 
-# Build all services
-./build-all.sh
-
-# Start the complete system
-./start-services.sh
+# The system is now ready for development
 ```
 
 ### 🎯 Access Points
@@ -130,15 +126,15 @@ After successful startup, access the system at:
 | `admin`  | `admin123` | ADMIN | Full system control and management |
 | `user`   | `user123`  | USER  | Search and URL submission          |
 
-## 📖 Detailed Setup Instructions
+## 📖 Development Setup Instructions
 
 ### 1️⃣ Infrastructure Services
 
 Start the required infrastructure components:
 
 ```bash
-# Start PostgreSQL, Kafka, Zookeeper, and Redis
-docker-compose up -d postgres kafka zookeeper redis
+# Start all infrastructure services
+docker-compose up -d
 
 # Verify services are running
 docker-compose ps
@@ -151,27 +147,30 @@ Start services in the correct dependency order:
 ```bash
 # 1. Service Discovery (Required first)
 cd search_engine_microservice/discovery
-mvn spring-boot:run &
+mvn spring-boot:run
 
-# Wait 30 seconds for discovery to be ready
-sleep 30
-
+# In separate terminals, start other services:
 # 2. Configuration Server
-cd ../config-server
-mvn spring-boot:run &
+cd search_engine_microservice/config-server
+mvn spring-boot:run
 
 # 3. Authentication Server
-cd ../auth-server
-mvn spring-boot:run &
+cd search_engine_microservice/auth-server
+mvn spring-boot:run
 
 # 4. API Gateway
-cd ../gateway
-mvn spring-boot:run &
+cd search_engine_microservice/gateway
+mvn spring-boot:run
 
-# 5. Business Services (can start in parallel)
-cd ../crawler && mvn spring-boot:run &
-cd ../indexer && mvn spring-boot:run &
-cd ../query && mvn spring-boot:run &
+# 5. Business Services
+cd search_engine_microservice/crawler
+mvn spring-boot:run
+
+cd search_engine_microservice/indexer
+mvn spring-boot:run
+
+cd search_engine_microservice/query
+mvn spring-boot:run
 ```
 
 ### 3️⃣ Frontend Application
@@ -380,12 +379,12 @@ Visit http://localhost:8761 to view:
 - Load balancing information
 - Service metadata and configuration
 
-## 🐳 Docker Deployment
+## 🐳 Docker Development
 
 ### 🚀 Development Environment
 
 ```bash
-# Start all services with Docker Compose
+# Start all infrastructure services
 docker-compose up -d
 
 # View logs
@@ -395,58 +394,31 @@ docker-compose logs -f
 docker-compose down
 ```
 
-### 🏭 Production Environment
+### 🔧 Configuration
 
-```bash
-# Use production configuration
-docker-compose -f docker-compose.prod.yml up -d
+The system uses default development configuration. Key services:
 
-# Scale services as needed
-docker-compose -f docker-compose.prod.yml up -d --scale crawler=3 --scale indexer=2
-```
+- **PostgreSQL**: Database for storing crawled content and user data
+- **Redis**: Caching layer for improved performance
+- **Kafka & Zookeeper**: Message queuing for asynchronous processing
 
-### 🔧 Environment Configuration
-
-Create a `.env` file from the template:
-
-```bash
-cp .env.example .env
-```
-
-Key configuration options:
-
-```bash
-# Database Configuration
-DB_USERNAME=admin
-DB_PASSWORD=secure_password
-DB_NAME=search_engine
-
-# OAuth2 Configuration
-OAUTH2_CLIENT_ID=search-engine-ui
-OAUTH2_CLIENT_SECRET=your-secure-secret
-OAUTH2_ISSUER=http://localhost:8080
-
-# Performance Tuning
-CRAWLER_MAX_PAGES=10000
-CRAWLER_THREADS=10
-CACHE_SIZE=5000
-INDEX_BATCH_SIZE=1000
-```
-
-## 🧪 Testing & Quality Assurance
+## 🧪 Testing
 
 ### 🔧 Backend Testing
 
 ```bash
-# Run all service tests
-./test-all.sh
-
 # Test specific service
 cd search_engine_microservice/auth-server
 mvn test
 
-# Integration tests
-mvn verify -P integration-tests
+# Run tests for all services
+cd search_engine_microservice/discovery && mvn test
+cd search_engine_microservice/config-server && mvn test
+cd search_engine_microservice/auth-server && mvn test
+cd search_engine_microservice/gateway && mvn test
+cd search_engine_microservice/crawler && mvn test
+cd search_engine_microservice/indexer && mvn test
+cd search_engine_microservice/query && mvn test
 ```
 
 ### 🎨 Frontend Testing
@@ -459,29 +431,11 @@ npm test
 
 # End-to-end tests
 npm run e2e
-
-# Test coverage
-npm run test:coverage
 ```
 
-### 🔍 Security Testing
+## 🔧 Configuration
 
-```bash
-# Test OAuth2 flow
-curl -X POST http://localhost:8080/oauth2/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=authorization_code&code=test&client_id=search-engine-ui"
-
-# Test JWT validation
-curl -H "Authorization: Bearer invalid_token" \
-  http://localhost:8081/api/indexer-service/admin/stats
-```
-
-## 🔧 Configuration & Customization
-
-### 🌍 Environment-Specific Configuration
-
-#### Development Configuration
+### 🌍 Development Configuration
 
 ```yaml
 # application.yml
@@ -501,167 +455,61 @@ logging:
     org.springframework.security: DEBUG
 ```
 
-#### Production Configuration
+### ⚙️ Service Configuration
 
-```yaml
-# application-prod.yml
-spring:
-  profiles:
-    active: production
-  datasource:
-    url: jdbc:postgresql://postgres:5432/search_engine
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-
-logging:
-  level:
-    org.springframework.security: WARN
-    com.suyash.se: INFO
-```
-
-### ⚙️ Service-Specific Settings
-
-#### Crawler Configuration
+#### Crawler Settings
 
 ```yaml
 crawler:
-  max-pages: 10000
-  threads: 5
+  max-pages: 1000
+  threads: 2
   delay-ms: 1000
   user-agent: "SearchEngine-Crawler/1.0"
-  respect-robots-txt: true
-  max-depth: 5
+  max-depth: 3
 ```
 
-#### Indexer Configuration
+#### Indexer Settings
 
 ```yaml
 indexer:
-  batch-size: 1000
+  batch-size: 100
   tf-idf:
-    min-term-frequency: 2
-    max-document-frequency: 0.8
-  pagerank:
-    iterations: 50
-    damping-factor: 0.85
+    min-term-frequency: 1
+    max-document-frequency: 0.9
 ```
 
-#### Search Configuration
+#### Search Settings
 
 ```yaml
 search:
-  max-results: 100
+  max-results: 50
   cache:
-    size: 10000
-    ttl-minutes: 60
-  suggestions:
-    max-suggestions: 10
-    min-query-length: 2
+    size: 1000
+    ttl-minutes: 30
 ```
 
-## 🚀 Production Deployment
+## 🔧 Development Configuration
 
-### ☁️ Cloud Deployment Options
-
-#### AWS Deployment
-
-```bash
-# Deploy to AWS EKS
-eksctl create cluster --name search-engine --region us-west-2
-kubectl apply -f k8s/aws/
-
-# Use AWS RDS for PostgreSQL
-# Use AWS ElastiCache for Redis
-# Use AWS MSK for Kafka
-```
-
-#### Google Cloud Deployment
-
-```bash
-# Deploy to Google GKE
-gcloud container clusters create search-engine --zone us-central1-a
-kubectl apply -f k8s/gcp/
-
-# Use Cloud SQL for PostgreSQL
-# Use Memorystore for Redis
-# Use Cloud Pub/Sub for messaging
-```
-
-#### Azure Deployment
-
-```bash
-# Deploy to Azure AKS
-az aks create --resource-group search-engine --name search-engine-cluster
-kubectl apply -f k8s/azure/
-
-# Use Azure Database for PostgreSQL
-# Use Azure Cache for Redis
-# Use Azure Service Bus for messaging
-```
-
-### 🔒 Production Security Hardening
-
-#### SSL/TLS Configuration
-
-```nginx
-# nginx.conf for production
-server {
-    listen 443 ssl http2;
-    server_name yourdomain.com;
-
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
-
-    location / {
-        proxy_pass http://search-engine-ui:80;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-#### Security Headers
-
-```yaml
-# Gateway security configuration
-spring:
-  security:
-    headers:
-      frame-options: DENY
-      content-type-options: nosniff
-      xss-protection: "1; mode=block"
-      referrer-policy: strict-origin-when-cross-origin
-```
-
-### 📈 Performance Optimization
+### 📈 Performance Tuning
 
 #### Database Optimization
 
 ```sql
--- PostgreSQL performance tuning
-CREATE INDEX CONCURRENTLY idx_inverted_index_word ON inverted_index(word);
-CREATE INDEX CONCURRENTLY idx_crawled_page_url ON crawled_page(url);
-CREATE INDEX CONCURRENTLY idx_user_username ON users(username);
-
--- Analyze and vacuum regularly
-ANALYZE;
-VACUUM ANALYZE;
+-- PostgreSQL development indexes
+CREATE INDEX idx_inverted_index_word ON inverted_index(word);
+CREATE INDEX idx_crawled_page_url ON crawled_page(url);
+CREATE INDEX idx_user_username ON users(username);
 ```
 
-#### Caching Strategy
+#### Caching Configuration
 
 ```yaml
-# Redis caching configuration
+# Redis caching for development
 spring:
   cache:
     type: redis
     redis:
       time-to-live: 3600000 # 1 hour
-      cache-null-values: false
   data:
     redis:
       repositories:
@@ -724,29 +572,26 @@ curl http://localhost:8081/api/crawler-service/admin/stats
 docker-compose logs query
 ```
 
-### 📊 Performance Issues
+### 📊 Performance Monitoring
 
-#### High Memory Usage
+#### Memory Usage
 
 ```bash
-# Monitor JVM memory usage
+# Monitor container resource usage
 docker stats
 
-# Adjust JVM heap size
-export JAVA_OPTS="-Xmx2g -Xms1g"
-
-# Enable garbage collection logging
-export JAVA_OPTS="$JAVA_OPTS -XX:+UseG1GC -XX:+PrintGCDetails"
+# Adjust JVM heap size for development
+export JAVA_OPTS="-Xmx1g -Xms512m"
 ```
 
-#### Slow Search Response
+#### Database Performance
 
 ```bash
-# Check database query performance
+# Check database queries
 docker-compose exec postgres psql -U admin -d search_engine
 EXPLAIN ANALYZE SELECT * FROM inverted_index WHERE word = 'search';
 
-# Monitor Redis cache hit rate
+# Check Redis cache
 docker-compose exec redis redis-cli info stats
 ```
 
@@ -755,123 +600,91 @@ docker-compose exec redis redis-cli info stats
 #### Service Health Checks
 
 ```bash
-# Check all service health
-for port in 8080 8081 8082 8083 8084; do
-  echo "Checking port $port:"
-  curl -s http://localhost:$port/actuator/health | jq '.status'
-done
-
-# Check service dependencies
-curl http://localhost:8081/actuator/health | jq '.components'
+# Check individual service health
+curl http://localhost:8080/actuator/health  # Auth Server
+curl http://localhost:8081/actuator/health  # Gateway
+curl http://localhost:8082/actuator/health  # Crawler
+curl http://localhost:8083/actuator/health  # Indexer
+curl http://localhost:8084/actuator/health  # Query Service
 ```
 
 #### Log Analysis
 
 ```bash
-# View real-time logs
-docker-compose logs -f --tail=100
+# View infrastructure logs
+docker-compose logs -f
 
-# Search for errors
+# Check for errors in infrastructure
 docker-compose logs | grep -i error
-
-# Filter by service
-docker-compose logs auth-server | grep -i "oauth"
 ```
 
 ## 📚 Additional Resources
 
-### 🔗 Useful Links
+### 🔗 Documentation Links
 
 - **Spring Security OAuth2**: https://spring.io/projects/spring-security-oauth
 - **Angular OAuth2 OIDC**: https://github.com/manfredsteyer/angular-oauth2-oidc
 - **Docker Compose**: https://docs.docker.com/compose/
 - **PostgreSQL**: https://www.postgresql.org/docs/
-- **Apache Kafka**: https://kafka.apache.org/documentation/
-
-### 📖 Learning Resources
-
-- **OAuth2 & JWT**: https://oauth.net/2/
-- **Microservices Patterns**: https://microservices.io/
-- **Spring Cloud**: https://spring.io/projects/spring-cloud
-- **Angular Security**: https://angular.io/guide/security
 
 ### 🤝 Contributing
 
 1. **Fork the Repository**
-
-   ```bash
-   git clone https://github.com/yourusername/SearchEngine.git
-   cd SearchEngine
-   ```
-
-2. **Create Feature Branch**
-
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-
+2. **Create Feature Branch**: `git checkout -b feature/new-feature`
 3. **Make Changes and Test**
-
-   ```bash
-   ./validate-setup.sh
-   ./test-all.sh
-   ```
-
-4. **Commit and Push**
-
-   ```bash
-   git commit -m 'Add amazing feature'
-   git push origin feature/amazing-feature
-   ```
-
+4. **Commit and Push**: `git commit -m 'Add new feature'`
 5. **Create Pull Request**
-   - Describe your changes
-   - Include test results
-   - Update documentation if needed
 
 ### 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### 🙏 Acknowledgments
-
-- **Spring Boot Team** - For the excellent microservices framework
-- **Angular Team** - For the powerful frontend framework
-- **OAuth2 Community** - For security standards and best practices
-- **Open Source Contributors** - For the various libraries and tools used
-
 ---
 
-## 🎉 Success Checklist
+## 🎉 Development Checklist
 
-Before considering your deployment successful, verify:
+Before starting development, verify:
 
-- [ ] ✅ All services start without errors
-- [ ] ✅ Service discovery shows all registered services
+- [ ] ✅ All infrastructure services start without errors (docker-compose up -d)
+- [ ] ✅ Service discovery shows all registered services (http://localhost:8761)
 - [ ] ✅ Angular UI loads at http://localhost:4200
 - [ ] ✅ Can login with admin/admin123 and user/user123
 - [ ] ✅ Admin panel accessible for admin users only
 - [ ] ✅ Can submit URLs for crawling
 - [ ] ✅ Search functionality returns relevant results
 - [ ] ✅ Role-based access control properly enforced
-- [ ] ✅ JWT tokens contain proper authorities
-- [ ] ✅ All health checks return healthy status
 
-## 🚀 What's Next?
+## 🚀 Development Environment
 
-Your OAuth2 + JWT + RBAC Search Engine is now ready for production use! Consider these enhancements:
+This is a **development-focused** microservices search engine with:
 
-1. **Enhanced Security**: Implement rate limiting, audit logging, and advanced threat detection
-2. **Scalability**: Add horizontal scaling, load balancing, and distributed caching
-3. **Analytics**: Implement comprehensive search analytics and user behavior tracking
-4. **AI/ML**: Add machine learning for better search relevance and content recommendations
-5. **Mobile App**: Develop mobile applications using the same OAuth2 backend
-6. **Enterprise Features**: Add SSO integration, advanced user management, and compliance features
+- **🔐 OAuth2 + JWT Authentication** - Complete security implementation
+- **🏗️ Microservices Architecture** - 7 independent services
+- **🎨 Angular Frontend** - Modern responsive UI with admin dashboard
+- **🐳 Docker Infrastructure** - PostgreSQL, Redis, Kafka for local development
+- **🔍 Search Engine** - Web crawling, indexing, and search capabilities
 
-**🎊 Congratulations on building a production-ready, secure search engine!**
+### Project Structure
 
-For questions, issues, or contributions, please visit our [GitHub repository](https://github.com/suyashnehete/SearchEngine) or open an issue.
+```
+SearchEngine/
+├── search_engine_microservice/     # Backend microservices
+│   ├── discovery/                  # Eureka service registry
+│   ├── config-server/             # Configuration management
+│   ├── auth-server/               # OAuth2 authentication
+│   ├── gateway/                   # API gateway
+│   ├── crawler/                   # Web crawling service
+│   ├── indexer/                   # Content indexing service
+│   └── query/                     # Search query service
+├── search-engine-ui/              # Angular frontend
+├── docker-compose.yml             # Infrastructure services
+└── readme.md                      # This file
+```
+
+**🎊 Ready for development and learning!**
+
+For questions or contributions, please visit our [GitHub repository](https://github.com/suyashnehete/SearchEngine).
 
 ---
 
-_Built with ❤️ using Spring Boot, Angular, OAuth2, and modern microservices architecture._
+_Built with ❤️ using Spring Boot, Angular, OAuth2, and microservices architecture._
