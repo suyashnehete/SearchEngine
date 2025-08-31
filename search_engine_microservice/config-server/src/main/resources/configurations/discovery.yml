@@ -1,15 +1,34 @@
-eureka:
-    instance:
-        hostname: localhost
-    client:
-        registerWithEureka: false
-        fetchRegistry: false
-        serviceUrl:
-            defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
-
 server:
-    port: 8761
+  port: ${EUREKA_PORT:8761}
 
 spring:
-    application:
-        name: discovery
+  application:
+    name: discovery
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.netflix.eureka: ${LOG_LEVEL:INFO}
+    com.netflix.discovery: ${LOG_LEVEL:INFO}

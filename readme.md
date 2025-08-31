@@ -154,15 +154,15 @@ mvn spring-boot:run
 cd search_engine_microservice/config-server
 mvn spring-boot:run
 
-# 3. Authentication Server
+# 3. Authentication Server (Fixed JWT bean conflict)
 cd search_engine_microservice/auth-server
 mvn spring-boot:run
 
-# 4. API Gateway
+# 4. API Gateway (Fixed reactive CORS filter)
 cd search_engine_microservice/gateway
 mvn spring-boot:run
 
-# 5. Business Services
+# 5. Business Services (Fixed Kafka config and JCache)
 cd search_engine_microservice/crawler
 mvn spring-boot:run
 
@@ -402,36 +402,6 @@ The system uses default development configuration. Key services:
 - **Redis**: Caching layer for improved performance
 - **Kafka & Zookeeper**: Message queuing for asynchronous processing
 
-## 🧪 Testing
-
-### 🔧 Backend Testing
-
-```bash
-# Test specific service
-cd search_engine_microservice/auth-server
-mvn test
-
-# Run tests for all services
-cd search_engine_microservice/discovery && mvn test
-cd search_engine_microservice/config-server && mvn test
-cd search_engine_microservice/auth-server && mvn test
-cd search_engine_microservice/gateway && mvn test
-cd search_engine_microservice/crawler && mvn test
-cd search_engine_microservice/indexer && mvn test
-cd search_engine_microservice/query && mvn test
-```
-
-### 🎨 Frontend Testing
-
-```bash
-cd search-engine-ui
-
-# Unit tests
-npm test
-
-# End-to-end tests
-npm run e2e
-```
 
 ## 🔧 Configuration
 
@@ -516,85 +486,6 @@ spring:
         enabled: true
 ```
 
-## 🔍 Troubleshooting Guide
-
-### 🚨 Common Issues & Solutions
-
-#### Authentication Problems
-
-```bash
-# Issue: OAuth2 login fails
-# Solution: Check auth-server logs and configuration
-docker-compose logs auth-server
-
-# Verify JWT token structure
-echo "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..." | base64 -d
-
-# Check CORS configuration in gateway
-curl -H "Origin: http://localhost:4200" \
-     -H "Access-Control-Request-Method: POST" \
-     -X OPTIONS http://localhost:8081/api/auth-server/oauth2/token
-```
-
-#### Service Discovery Issues
-
-```bash
-# Issue: Services not registering with Eureka
-# Solution: Check network connectivity and configuration
-curl http://localhost:8761/eureka/apps
-
-# Verify service registration
-curl http://localhost:8761/eureka/apps/AUTH-SERVER
-```
-
-#### Database Connection Problems
-
-```bash
-# Issue: Database connection failures
-# Solution: Check PostgreSQL status and credentials
-docker-compose exec postgres psql -U admin -d search_engine -c "\dt"
-
-# Test connection from service
-docker-compose exec auth-server nc -zv postgres 5432
-```
-
-#### Search Not Working
-
-```bash
-# Issue: Search returns no results
-# Solution: Check if content is indexed
-curl http://localhost:8081/api/indexer-service/admin/stats
-
-# Verify crawler has processed URLs
-curl http://localhost:8081/api/crawler-service/admin/stats
-
-# Check query service logs
-docker-compose logs query
-```
-
-### 📊 Performance Monitoring
-
-#### Memory Usage
-
-```bash
-# Monitor container resource usage
-docker stats
-
-# Adjust JVM heap size for development
-export JAVA_OPTS="-Xmx1g -Xms512m"
-```
-
-#### Database Performance
-
-```bash
-# Check database queries
-docker-compose exec postgres psql -U admin -d search_engine
-EXPLAIN ANALYZE SELECT * FROM inverted_index WHERE word = 'search';
-
-# Check Redis cache
-docker-compose exec redis redis-cli info stats
-```
-
 ### 🔧 Debug Commands
 
 #### Service Health Checks
@@ -607,37 +498,6 @@ curl http://localhost:8082/actuator/health  # Crawler
 curl http://localhost:8083/actuator/health  # Indexer
 curl http://localhost:8084/actuator/health  # Query Service
 ```
-
-#### Log Analysis
-
-```bash
-# View infrastructure logs
-docker-compose logs -f
-
-# Check for errors in infrastructure
-docker-compose logs | grep -i error
-```
-
-## 📚 Additional Resources
-
-### 🔗 Documentation Links
-
-- **Spring Security OAuth2**: https://spring.io/projects/spring-security-oauth
-- **Angular OAuth2 OIDC**: https://github.com/manfredsteyer/angular-oauth2-oidc
-- **Docker Compose**: https://docs.docker.com/compose/
-- **PostgreSQL**: https://www.postgresql.org/docs/
-
-### 🤝 Contributing
-
-1. **Fork the Repository**
-2. **Create Feature Branch**: `git checkout -b feature/new-feature`
-3. **Make Changes and Test**
-4. **Commit and Push**: `git commit -m 'Add new feature'`
-5. **Create Pull Request**
-
-### 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -680,11 +540,3 @@ SearchEngine/
 ├── docker-compose.yml             # Infrastructure services
 └── readme.md                      # This file
 ```
-
-**🎊 Ready for development and learning!**
-
-For questions or contributions, please visit our [GitHub repository](https://github.com/suyashnehete/SearchEngine).
-
----
-
-_Built with ❤️ using Spring Boot, Angular, OAuth2, and microservices architecture._

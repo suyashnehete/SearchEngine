@@ -1,6 +1,6 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:8222/api/v1',
+    apiUrl: '/api', // Use relative URL to leverage proxy
     retryAttempts: 3,
     retryDelay: 1000,
     requestTimeout: 30000,

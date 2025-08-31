@@ -22,7 +22,7 @@ public class RedisUrlTrackingService {
      */
     public boolean isVisited(String url) {
         try {
-            return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(VISITED_URLS_KEY, url));
+            return redisTemplate.opsForSet().isMember(VISITED_URLS_KEY, url) == true;
         } catch (Exception e) {
             System.err.println("Error checking if URL is visited: " + e.getMessage());
             return false;

@@ -6,6 +6,7 @@ import { LoginComponent } from './auth/login.component';
 import { AuthCallbackComponent } from './auth/auth-callback.component';
 import { UnauthorizedComponent } from './auth/unauthorized.component';
 import { AdminPanelComponent } from './components/admin-panel.component';
+import { StartupGuideComponent } from './components/startup-guide.component';
 import { AuthGuard } from './auth/auth.guard';
 
 const routes: Routes = [
@@ -30,6 +31,10 @@ const routes: Routes = [
     component: AdminPanelComponent,
     canActivate: [AuthGuard],
     data: { role: 'ADMIN' }
+  },
+  {
+    path: 'startup-guide',
+    component: StartupGuideComponent
   },
   {
     path: 'crawl',

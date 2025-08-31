@@ -61,8 +61,11 @@ public class AuthorizationServerConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests((authorize) -> authorize
+        http.csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests((authorize) -> authorize
                 .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll() // Allow API login
+                .requestMatchers("/login", "/", "/css/**", "/js/**").permitAll() // Allow login page
                 .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults());
 
@@ -127,8 +130,9 @@ public class AuthorizationServerConfig {
 
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
+        String gatewayPort = System.getProperty("GATEWAY_PORT", "8081");
         return AuthorizationServerSettings.builder()
-                .issuer("http://localhost:8080")
+                .issuer("http://localhost:" + gatewayPort + "/api/auth-server")
                 .build();
     }
 

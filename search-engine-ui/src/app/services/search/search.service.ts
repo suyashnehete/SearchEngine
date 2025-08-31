@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { SearchResponse } from '../models/search-response';
@@ -13,11 +14,12 @@ import { ErrorHandlerService } from '../error/error-handler.service';
 export class SearchService extends BaseService {
 
   constructor(
+    http: HttpClient,
     private validationService: ValidationService,
     private cacheService: CacheService,
     private errorHandler: ErrorHandlerService
   ) {
-    super();
+    super(http);
   }
 
   search(query: string, topK: number = 50, page: number = 1, size: number = 10): Observable<SearchResponse> {
@@ -48,7 +50,7 @@ export class SearchService extends BaseService {
       size: size.toString()
     });
 
-    return this.get<SearchResponse>(`search?${params.toString()}`)
+    return this.get<SearchResponse>(`query-service/search?${params.toString()}`)
       .pipe(
         tap(response => {
           // Cache successful response
@@ -87,7 +89,7 @@ export class SearchService extends BaseService {
       userId: userId.trim()
     });
 
-    return this.get<string[]>(`suggestions?${params.toString()}`)
+    return this.get<string[]>(`query-service/suggestions?${params.toString()}`)
       .pipe(
         tap(suggestions => {
           // Cache successful response with shorter TTL for suggestions
@@ -119,7 +121,7 @@ export class SearchService extends BaseService {
       params.append('tags', filters.tags.join(','));
     }
 
-    return this.get<SearchResponse>(`search/filters?${params.toString()}`)
+    return this.get<SearchResponse>(`query-service/search/filters?${params.toString()}`)
       .pipe(
         catchError(error => {
           this.errorHandler.logError(error, 'SearchService.searchWithFilters');
@@ -142,7 +144,7 @@ export class SearchService extends BaseService {
       size: size.toString()
     });
 
-    return this.get<SearchResponse>(`search/corrections?${params.toString()}`)
+    return this.get<SearchResponse>(`query-service/search/corrections?${params.toString()}`)
       .pipe(
         catchError(error => {
           this.errorHandler.logError(error, 'SearchService.searchWithCorrections');

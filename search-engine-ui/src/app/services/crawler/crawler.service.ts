@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { BaseService } from '../base-service';
@@ -24,10 +25,11 @@ export interface CrawlerResponse {
 export class CrawlerService extends BaseService {
 
   constructor(
+    http: HttpClient,
     private validationService: ValidationService,
     private errorHandler: ErrorHandlerService
   ) {
-    super();
+    super(http);
   }
 
   submitUrl(url: string, priority: string = '5', maxDepth: string = '3'): Observable<CrawlerResponse> {
@@ -55,7 +57,7 @@ export class CrawlerService extends BaseService {
       maxDepth: maxDepth
     };
 
-    return this.post<CrawlerResponse>('crawler', request)
+    return this.post<CrawlerResponse>('crawler-service/crawler', request)
       .pipe(
         catchError(error => {
           this.errorHandler.logError(error, 'CrawlerService.submitUrl');
@@ -65,7 +67,7 @@ export class CrawlerService extends BaseService {
   }
 
   getCrawlerStatus(): Observable<any> {
-    return this.get<any>('crawler/status')
+    return this.get<any>('crawler-service/status')
       .pipe(
         catchError(error => {
           this.errorHandler.logError(error, 'CrawlerService.getCrawlerStatus');
@@ -75,7 +77,7 @@ export class CrawlerService extends BaseService {
   }
 
   getCrawlerMetrics(): Observable<any> {
-    return this.get<any>('monitoring/metrics')
+    return this.get<any>('crawler-service/metrics')
       .pipe(
         catchError(error => {
           this.errorHandler.logError(error, 'CrawlerService.getCrawlerMetrics');

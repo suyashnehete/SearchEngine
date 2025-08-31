@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import lombok.AllArgsConstructor;
 
@@ -17,7 +17,7 @@ import lombok.AllArgsConstructor;
 public class BeansConfig {
 
     @Bean
-    public CorsFilter corsFilter() {
+    public CorsWebFilter corsWebFilter() {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
@@ -30,6 +30,6 @@ public class BeansConfig {
         ));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
+        return new CorsWebFilter(source);
     }
 }

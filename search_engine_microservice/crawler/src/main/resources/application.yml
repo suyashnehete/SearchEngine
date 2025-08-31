@@ -1,5 +1,23 @@
+server:
+  port: ${CRAWLER_PORT:8082}
+
 spring:
-    application:
-        name: crawler
-    config:
-        import: optional:configserver:http://localhost:8888
+  application:
+    name: crawler
+  config:
+    import: optional:configserver:http://localhost:${CONFIG_SERVER_PORT:8888}
+  web:
+    resources:
+      add-mappings: false  # Disable static resource handling to prevent conflicts with controller mappings
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:${EUREKA_PORT:8761}/eureka/
+  instance:
+    prefer-ip-address: true
+
+# Internal service authentication
+service:
+  internal:
+    token: ${INTERNAL_SERVICE_TOKEN:search-engine-internal-token-2024}

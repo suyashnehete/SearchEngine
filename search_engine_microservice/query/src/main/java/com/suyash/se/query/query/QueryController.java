@@ -1,5 +1,6 @@
 package com.suyash.se.query.query;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,7 +13,7 @@ public class QueryController {
 
     private final QueryService queryService;
 
-    @GetMapping("/search")
+    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse search(
             @RequestParam String query,
             @RequestParam(defaultValue = "10") int topK,

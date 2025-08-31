@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
@@ -30,8 +32,14 @@ import { Observable } from 'rxjs';
                 Submit URL
               </a>
             </li>
-            <li class="nav-item" *ngIf="authService.isAdmin()">
+            <li class="nav-item" *ngIf="isAdmin$ | async">
               <a class="nav-link" routerLink="/admin" routerLinkActive="active">
+                <i class="fas fa-cogs me-1"></i>
+                Admin Panel
+              </a>
+            </li>
+            <li class="nav-item" *ngIf="!(isAdmin$ | async) && !(isAuthenticated$ | async)">
+              <a class="nav-link" href="#" (click)="showAdminLogin($event)">
                 <i class="fas fa-cogs me-1"></i>
                 Admin Panel
               </a>
@@ -40,7 +48,7 @@ import { Observable } from 'rxjs';
           
           <ul class="navbar-nav">
             <li class="nav-item" *ngIf="!(isAuthenticated$ | async)">
-              <a class="nav-link" routerLink="/login">
+              <a class="nav-link" (click)="showLoginModal()" style="cursor: pointer;">
                 <i class="fas fa-sign-in-alt me-1"></i>
                 Login
               </a>
@@ -48,7 +56,7 @@ import { Observable } from 'rxjs';
             <li class="nav-item dropdown" *ngIf="isAuthenticated$ | async">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                 <i class="fas fa-user me-1"></i>
-                {{ authService.userClaims?.preferred_username || 'User' }}
+                {{ (userInfo$ | async)?.username || 'User' }}
               </a>
               <ul class="dropdown-menu">
                 <li><span class="dropdown-item-text">
@@ -65,20 +73,59 @@ import { Observable } from 'rxjs';
         </div>
       </div>
     </nav>
+    
+    <app-login-modal 
+      [isVisible]="showModal" 
+      (loginSuccess)="onLoginSuccess()" 
+      (modalClosed)="onModalClosed()">
+    </app-login-modal>
   `
 })
 export class NavbarComponent implements OnInit {
   isAuthenticated$: Observable<boolean>;
   userRoles$: Observable<string[]>;
+  userInfo$: Observable<any>;
+  isAdmin$: Observable<boolean>;
+  showModal = false;
+  private pendingAdminNavigation = false;
 
-  constructor(public authService: AuthService) {
+  constructor(
+    public authService: AuthService,
+    private router: Router
+  ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.userRoles$ = this.authService.userRoles$;
+    this.userInfo$ = this.authService.userInfo$;
+    this.isAdmin$ = this.userRoles$.pipe(
+      map(roles => roles.includes('ADMIN'))
+    );
   }
 
   ngOnInit() { }
 
+  showLoginModal() {
+    this.showModal = true;
+  }
+
+  showAdminLogin(event: Event) {
+    event.preventDefault();
+    this.pendingAdminNavigation = true;
+    this.showModal = true;
+  }
+
+  onLoginSuccess() {
+    if (this.pendingAdminNavigation && this.authService.isAdmin()) {
+      this.router.navigate(['/admin']);
+      this.pendingAdminNavigation = false;
+    }
+  }
+
+  onModalClosed() {
+    this.showModal = false;
+    this.pendingAdminNavigation = false;
+  }
+
   logout() {
-    this.authService.logout();
+    this.authService.logout().subscribe();
   }
 }

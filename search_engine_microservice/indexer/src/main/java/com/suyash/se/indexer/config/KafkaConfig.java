@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -15,6 +17,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
@@ -28,7 +31,7 @@ import org.springframework.util.backoff.FixedBackOff;
 @Configuration
 public class KafkaConfig {
 
-    @Value("${kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Value("${kafka.max-size:10485760}") // Default 10MB
@@ -89,8 +92,11 @@ public class KafkaConfig {
         
         // JSON Deserializer Configuration
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.suyash.se.*");
-        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "java.util.List");
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, true);
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.suyash.se.indexer.messaging.CrawledPageBatch");
+        props.put(JsonDeserializer.TYPE_MAPPINGS, 
+            "com.suyash.se.crawler.messaging.CrawledPageBatch:com.suyash.se.indexer.messaging.CrawledPageBatch," +
+            "com.suyash.se.crawler.crawler.CrawledPage:com.suyash.se.indexer.crawler.CrawledPage");
         
         // Performance Settings
         props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, 1024);   // 1KB minimum fetch
@@ -129,17 +135,47 @@ public class KafkaConfig {
         
         // Error Handling with Retry
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(
-            new FixedBackOff(5000L, 3L) // Retry 3 times with 5 second intervals
+            new FixedBackOff(1000L, 3L) // Retry 3 times with 1 second intervals
         );
         
         // Configure which exceptions should be retried
         errorHandler.addNotRetryableExceptions(
             IllegalArgumentException.class,
-            NullPointerException.class
+            NullPointerException.class,
+            org.springframework.kafka.support.serializer.DeserializationException.class,
+            org.springframework.messaging.converter.MessageConversionException.class
         );
         
         factory.setCommonErrorHandler(errorHandler);
         
         return factory;
+    }
+
+    /**
+     * Kafka Admin for topic management
+     */
+    @Bean
+    public KafkaAdmin kafkaAdmin() {
+        Map<String, Object> configs = new HashMap<>();
+        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        return new KafkaAdmin(configs);
+    }
+
+    /**
+     * Auto-create required topics (same as crawler for consistency)
+     */
+    @Bean
+    public NewTopic crawledPagesTopic() {
+        return new NewTopic("crawled-pages", 3, (short) 1);
+    }
+
+    @Bean
+    public NewTopic crawledPagesBatchTopic() {
+        return new NewTopic("crawled-pages-batch", 3, (short) 1);
+    }
+
+    @Bean
+    public NewTopic indexingEventsTopic() {
+        return new NewTopic("indexing-events", 3, (short) 1);
     }
 }

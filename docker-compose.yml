@@ -1,40 +1,48 @@
 services:
   postgres:
     container_name: postgres-search-engine
-    image: postgres
+    image: postgres:15-alpine
     environment:
       POSTGRES_USER: ${DB_USERNAME:-admin}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-admin}
       PGDATA: /var/lib/postgresql/data
       POSTGRES_DB: ${DB_NAME:-search_engine}
     volumes:
-      - postgres:/data/postgres
+      - postgres:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "${DB_PORT:-5432}:5432"
     networks:
       - search-engine-network
     restart: unless-stopped
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.3.0
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-    ports:
-      - "2181:2181"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USERNAME:-admin} -d ${DB_NAME:-search_engine}",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   kafka:
-    image: confluentinc/cp-kafka:7.3.0
-    depends_on:
-      - zookeeper
+    container_name: kafka-search-engine
+    image: confluentinc/cp-kafka:7.4.0
     ports:
-      - "9092:9092"
-      - "9093:9093" # Additional port for internal communication
+      - "${KAFKA_PORT:-9092}:9092"
+      - "9093:9093"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # KRaft mode configuration (no Zookeeper)
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9094
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+
+      # Cluster configuration
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
 
       # Replication and Durability
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -50,8 +58,12 @@ services:
       KAFKA_LOG_RETENTION_HOURS: 168 # 7 days
       KAFKA_LOG_SEGMENT_BYTES: 1073741824 # 1GB
 
+      # Auto Topic Creation
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+
       # Message Size Configuration
-      KAFKA_MESSAGE_MAX_BYTES: 10485760 # 10MB (reduced from 50MB)
+      KAFKA_MESSAGE_MAX_BYTES: 10485760 # 10MB
       KAFKA_REPLICA_FETCH_MAX_BYTES: 10485760
       KAFKA_PRODUCER_MAX_REQUEST_SIZE: 10485760
       KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES: 10485760
@@ -76,40 +88,29 @@ services:
         ]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
 
   redis:
     container_name: redis-search-engine
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     networks:
       - search-engine-network
     restart: unless-stopped
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-
-  auth-server:
-    container_name: auth-server
-    build:
-      context: ./search_engine_microservice/auth-server
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      - DB_USERNAME=${DB_USERNAME:-admin}
-      - DB_PASSWORD=${DB_PASSWORD:-admin}
-      - DB_NAME=${DB_NAME:-search_engine}
-    depends_on:
-      - postgres
-    networks:
-      - search-engine-network
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 networks:
   search-engine-network:
     driver: bridge
+    name: search-engine-network
 
 volumes:
   postgres:

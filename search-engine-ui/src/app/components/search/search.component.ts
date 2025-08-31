@@ -5,7 +5,7 @@ import { LoggingService } from 'src/app/services/logging/logging.service';
 import { SearchResponse } from 'src/app/services/models/search-response';
 import { SearchService } from 'src/app/services/search/search.service';
 import { LoadingService } from 'src/app/services/loading/loading.service';
-import { ErrorHandlerService, UserFriendlyError } from 'src/app/services/error/error-handler.service';
+import { ErrorHandlerService } from 'src/app/services/error/error-handler.service';
 import { ValidationService } from 'src/app/services/validation/validation.service';
 import { environment } from '../../../environments/environment';
 
@@ -21,7 +21,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   suggestions: string[] = [];
   page = 1;
   size = 10;
-  userId: string = 'user_' + Math.random().toString(36).substr(2, 9); // Generate unique user ID
+  userId: string = this.getOrCreateUserId(); // Get user ID or use default
 
   // UI State
   isSearchLoading = false;
@@ -198,6 +198,30 @@ export class SearchComponent implements OnInit, OnDestroy {
   retrySearch(): void {
     this.clearErrors();
     this.search();
+  }
+
+  // Get or create user ID
+  private getOrCreateUserId(): string {
+    try {
+      // Check if user is authenticated
+      const authToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      const storedUserId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
+
+      if (storedUserId) {
+        return storedUserId;
+      }
+
+      if (authToken) {
+        // User is authenticated but no stored ID, use authenticated user
+        return 'authenticated-user';
+      }
+
+      // No authentication - use anonymous user
+      return 'anonymous';
+    } catch (error) {
+      console.warn('Error getting user ID, using anonymous:', error);
+      return 'anonymous';
+    }
   }
 
   // Check if pagination should be shown

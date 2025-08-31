@@ -17,10 +17,10 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 @Configuration
 public class KafkaConfig {
 
-    @Value("${kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${kafka.max-size}")
+    @Value("${kafka.max-size:10485760}")
     private String maxSize;
 
     // Producer Factory

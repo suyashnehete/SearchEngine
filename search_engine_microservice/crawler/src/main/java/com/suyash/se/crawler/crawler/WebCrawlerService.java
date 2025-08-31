@@ -45,15 +45,12 @@ public class WebCrawlerService {
             log.warn("Invalid URL rejected: {}", url);
             return;
         }
-
         if (urlTrackingService.isVisited(url)) {
             log.debug("URL already visited, skipping: {}", url);
             return;
         }
-
         urlTrackingService.addToQueue(url);
         log.info("Added URL to queue: {} (Queue size: {})", url, urlTrackingService.getQueueSize());
-
         if (!isCrawling) {
             log.info("Starting crawling process for crawler instance: {}", crawlerInstanceId);
             startCrawling();
