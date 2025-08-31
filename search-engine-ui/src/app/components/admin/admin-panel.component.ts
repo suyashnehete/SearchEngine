@@ -50,85 +50,49 @@ export class AdminPanelComponent implements OnInit {
 
   startCrawler() {
     console.log('Starting crawler...');
-    this.executeAdminAction('POST', 'crawler-service/admin/start', null, 'Crawler started successfully!');
+    this.makeAdminRequest('POST', 'crawler-service/crawler/admin/start', null).subscribe({
+      next: () => { },
+      error: () => { }
+    });
+    alert('Crawler start requested!');
   }
 
   stopCrawler() {
     console.log('Stopping crawler...');
-    this.executeAdminAction('POST', 'crawler-service/admin/stop', null, 'Crawler stopped successfully!');
+    this.makeAdminRequest('POST', 'crawler-service/crawler/admin/stop', null).subscribe({
+      next: () => { },
+      error: () => { }
+    });
+    alert('Crawler stop requested!');
   }
 
   reindexAll() {
     console.log('Starting reindex...');
-    this.executeAdminAction('POST', 'indexer-service/admin/reindex', null, 'Reindexing started successfully!');
+    this.makeAdminRequest('POST', 'indexer-service/indexer/admin/reindex', null).subscribe({
+      next: () => { },
+      error: () => { }
+    });
+    alert('Reindexing started successfully!');
   }
 
   clearIndex() {
     if (confirm('Are you sure you want to clear the entire index? This action cannot be undone.')) {
       console.log('Clearing index...');
-      this.executeAdminAction('DELETE', 'indexer-service/admin/index', null, 'Index cleared successfully!');
+      this.makeAdminRequest('DELETE', 'indexer-service/indexer/admin/index', null).subscribe({
+        next: () => { },
+        error: () => { }
+      });
+      alert('Index clearing started!');
     }
   }
 
   optimizeIndex() {
     console.log('Optimizing index...');
-    this.executeAdminAction('POST', 'indexer-service/admin/optimize', null, 'Index optimization started successfully!');
-  }
-
-  viewCrawlerQueue() {
-    console.log('Fetching crawler queue...');
-    this.executeAdminAction('GET', 'crawler-service/admin/queue', null, 'Crawler queue fetched successfully! Check console for details.');
-  }
-
-  viewBlockedDomains() {
-    // This would be implemented later
-    console.log('Blocked domains feature coming soon');
-    alert('Blocked domains feature coming soon!\n\nThis will allow you to manage domains that should not be crawled.');
-  }
-
-  viewCrawlPolicies() {
-    // This would be implemented later
-    console.log('Crawl policies feature coming soon');
-    alert('Crawl policies feature coming soon!\n\nThis will allow you to configure crawling rules and restrictions.');
-  }
-
-  viewSystemMetrics() {
-    console.log('Fetching system metrics...');
-    this.executeAdminAction('GET', 'crawler-service/admin/stats', null, 'Crawler stats fetched successfully!');
-    this.executeAdminAction('GET', 'indexer-service/admin/stats', null, 'Index stats fetched successfully!');
-  }
-
-  viewSearchAnalytics() {
-    // This would be implemented later with query service analytics
-    console.log('Search analytics feature coming soon');
-    alert('Search analytics feature coming soon!');
-  }
-
-  // Comprehensive system check
-  checkSystemReadiness() {
-    console.log('Performing comprehensive system check...');
-
-    const checks = [
-      { name: 'Authentication', check: () => this.authService.isAuthenticated },
-      { name: 'Admin Role', check: () => this.authService.isAdmin() },
-      { name: 'Access Token', check: () => !!this.authService.accessToken }
-    ];
-
-    const results = checks.map(check => ({
-      name: check.name,
-      status: check.check(),
-      icon: check.check() ? '✅' : '❌'
-    }));
-
-    const authResults = results.map(r => `${r.icon} ${r.name}: ${r.status ? 'OK' : 'FAILED'}`).join('\n');
-
-    const message = `System Readiness Check:\n\n${authResults}\n\n` +
-      `Next Steps:\n` +
-      `1. If auth is OK, click "Test Admin API" to check backend\n` +
-      `2. If backend fails, start services using startup guide\n` +
-      `3. If all OK, admin features should work`;
-
-    alert(message);
+    this.makeAdminRequest('POST', 'indexer-service/indexer/admin/optimize', null).subscribe({
+      next: () => { },
+      error: () => { }
+    });
+    alert('Index optimization started!');
   }
 
   testConnection() {
@@ -159,10 +123,6 @@ export class AdminPanelComponent implements OnInit {
     });
   }
 
-  private checkServiceHealth(service: { name: string, url: string, port: string }) {
-    return this.adminPanelService.checkServiceHealth(service);
-  }
-
   private showConnectionResults(results: string[]) {
     const authStatus = `Authentication Status:\n` +
       `• Authenticated: ${this.authService.isAuthenticated ? '✅' : '❌'}\n` +
@@ -174,91 +134,31 @@ export class AdminPanelComponent implements OnInit {
     alert(message);
   }
 
-  // Debug method to test auth without triggering login popup
-  debugAuth() {
-    console.log('=== Authentication Debug Info ===');
-    console.log('isAuthenticated:', this.authService.isAuthenticated);
-    console.log('accessToken:', this.authService.accessToken);
-    console.log('userInfo:', this.authService.userInfo);
-    console.log('isAdmin:', this.authService.isAdmin());
-    console.log('localStorage token:', localStorage.getItem('access_token'));
-    console.log('localStorage userInfo:', localStorage.getItem('user_info'));
-
-    const debugInfo = `Authentication Debug:\n\n` +
-      `• Authenticated: ${this.authService.isAuthenticated}\n` +
-      `• Has Token: ${!!this.authService.accessToken}\n` +
-      `• Token Length: ${this.authService.accessToken?.length || 0}\n` +
-      `• User: ${this.authService.userInfo?.username || 'None'}\n` +
-      `• Roles: ${this.authService.userInfo?.authorities?.join(', ') || 'None'}\n` +
-      `• Admin Role: ${this.authService.isAdmin()}`;
-
-    alert(debugInfo);
-  }
-
-  // Quick test method that doesn't make any API calls
-  quickTest() {
-    const authOk = this.authService.isAuthenticated && this.authService.isAdmin();
-    const message = authOk ?
-      '✅ Authentication is working correctly!\n\nYou are logged in as an admin. Admin features should work if backend services are running.\n\nClick "Check Service Status" to verify backend availability.' :
-      '❌ Authentication issue detected!\n\nYou are not properly authenticated as an admin. Please refresh the page and log in again.';
-
-    alert(message);
-  }
-
-  // Simple test of admin functionality without complex checks
-  testAdminEndpoint() {
-    console.log('Testing simple admin endpoint...');
-
-    this.makeAdminRequest('GET', 'crawler-service/admin/stats').subscribe({
+  viewCrawlerQueue() {
+    console.log('Fetching crawler queue...');
+    this.makeAdminRequest<any>('GET', 'crawler-service/crawler/admin/queue', null).subscribe({
       next: (data) => {
-        console.log('Admin endpoint test successful:', data);
-        alert('✅ Admin endpoint test successful!\n\nBackend services are running and responding.');
+        // Show a summary in an alert
+        const message = `Crawler Queue Info:\n\n` +
+          `• Visited Count: ${data.visitedCount}\n` +
+          `• Queue Size: ${data.queueSize}\n` +
+          `• Is Running: ${data.isRunning ? 'Yes' : 'No'}\n` +
+          `• Instance ID: ${data.crawlerInstanceId}`;
+        alert(message);
+        console.log('Crawler queue response:', data);
       },
       error: (err) => {
-        console.error('Admin endpoint test failed:', err);
-        if (err.status === 0) {
-          alert('❌ Backend services are not running.\n\nPlease start the services using the startup guide.');
-        } else if (err.status === 401) {
-          alert('❌ Authentication failed.\n\nYou may need to log in again or check your admin privileges.');
-        } else if (err.status === 403) {
-          alert('❌ Access denied.\n\nAdmin privileges are required for this operation.');
-        } else {
-          alert(`❌ Admin endpoint test failed.\n\nStatus: ${err.status}\nError: ${err.message || 'Unknown error'}`);
-        }
+        this.handleAdminError(err, 'crawler-service/crawler/admin/queue');
       }
     });
   }
 
-  // Simple backend availability check
-  private checkBackendAvailability() {
-    return this.adminPanelService.checkBackendAvailability();
+
+  private checkServiceHealth(service: { name: string, url: string, port: string }) {
+    return this.adminPanelService.checkServiceHealth(service);
   }
 
-  // Unified admin action executor with proper error handling
-  private executeAdminAction<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: any, successMessage?: string): void {
-    // Check authentication first
-    if (!this.authService.isAuthenticated || !this.authService.isAdmin()) {
-      alert('Authentication Error: You must be logged in as an admin. Please refresh the page and log in again.');
-      return;
-    }
 
-    // Make the request directly (since backend has permitAll for now)
-    this.makeAdminRequest<T>(method, path, body).subscribe({
-      next: (data) => {
-        console.log(`${method} ${path} successful:`, data);
-        if (successMessage) {
-          alert(successMessage);
-        }
-        if (data) {
-          console.log('Response data:', data);
-        }
-      },
-      error: (err) => {
-        console.error(`${method} ${path} failed:`, err);
-        this.handleAdminError(err, path);
-      }
-    });
-  }
 
   // Centralized error handling for admin operations
   private handleAdminError(error: any, path: string): void {

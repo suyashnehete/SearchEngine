@@ -1,4 +1,62 @@
 <div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <h2><i class="fas fa-cogs me-2"></i>Admin Panel</h2>
+      <p class="text-muted">Manage indexing operations</p>
+      <div class="alert alert-info">
+        <h6><i class="fas fa-info-circle me-2"></i>Service Status</h6>
+        <p class="mb-2">
+          Admin panel uses API Gateway with JWT authentication. Ensure all
+          backend services are running:
+        </p>
+        <small>
+          <strong>Required Services:</strong><br />
+          • Gateway (port 8081) - API routing<br />
+          • Auth Server (port 8080) - Authentication<br />
+          • Crawler (port 8082) - Web crawling<br />
+          • Indexer (port 8083) - Content indexing<br />
+          • Query (port 8084) - Search processing<br />
+          • Discovery (port 8761) - Service registry
+        </small>
+        <div class="mt-2">
+          <button
+            class="btn btn-sm btn-outline-primary me-2"
+            (click)="testConnection()"
+          >
+            <i class="fas fa-heartbeat me-1"></i>Check Service Status
+          </button>
+          <button
+            class="btn btn-sm btn-outline-secondary me-2"
+            (click)="debugAuth()"
+          >
+            <i class="fas fa-bug me-1"></i>Debug Auth
+          </button>
+          <button
+            class="btn btn-sm btn-outline-warning me-2"
+            (click)="quickTest()"
+          >
+            <i class="fas fa-flask me-1"></i>Quick Test
+          </button>
+          <button
+            class="btn btn-sm btn-outline-success me-2"
+            (click)="testAdminEndpoint()"
+          >
+            <i class="fas fa-vial me-1"></i>Test Admin API
+          </button>
+          <button
+            class="btn btn-sm btn-outline-danger me-2"
+            (click)="checkSystemReadiness()"
+          >
+            <i class="fas fa-clipboard-check me-1"></i>System Check
+          </button>
+          <a class="btn btn-sm btn-outline-info" routerLink="/startup-guide">
+            <i class="fas fa-rocket me-1"></i>Startup Guide
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="row mt-4">
     <div class="col-md-6">
       <div class="card">
