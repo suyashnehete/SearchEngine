@@ -1,0 +1,45 @@
+.container {
+    max-width: 900px;
+}
+
+.alert-warning {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.08);
+}
+
+.bg-dark {
+    background: #343a40 !important;
+}
+
+.text-light {
+    color: #f8f9fa !important;
+}
+
+.p-2 {
+    padding: 0.5rem !important;
+}
+
+.rounded {
+    border-radius: 0.5rem !important;
+}
+
+.mt-3 {
+    margin-top: 1rem !important;
+}
+
+.me-2 {
+    margin-right: 0.5rem !important;
+}
+
+.me-1 {
+    margin-right: 0.25rem !important;
+}
+
+.list-unstyled {
+    list-style: none;
+    padding-left: 0;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}

@@ -1,191 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { AuthService } from '../auth/auth.service';
-import { environment } from '../../environments/environment';
+import { AdminPanelService } from '../../services/admin-panel.service';
+import { AuthService } from '../../auth/auth.service';
+import { environment } from '../../../environments/environment';
 import { timeout, catchError, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
   selector: 'app-admin-panel',
-  template: `
-    <div class="container mt-4">
-      <div class="row">
-        <div class="col-12">
-          <h2><i class="fas fa-cogs me-2"></i>Admin Panel</h2>
-          <p class="text-muted">Manage indexing operations</p>
-          <div class="alert alert-info">
-            <h6><i class="fas fa-info-circle me-2"></i>Service Status</h6>
-            <p class="mb-2">Admin panel uses API Gateway with JWT authentication. Ensure all backend services are running:</p>
-            <small>
-              <strong>Required Services:</strong><br>
-              • Gateway (port 8081) - API routing<br>
-              • Auth Server (port 8080) - Authentication<br>
-              • Crawler (port 8082) - Web crawling<br>
-              • Indexer (port 8083) - Content indexing<br>
-              • Query (port 8084) - Search processing<br>
-              • Discovery (port 8761) - Service registry
-            </small>
-            <div class="mt-2">
-              <button class="btn btn-sm btn-outline-primary me-2" (click)="testConnection()">
-                <i class="fas fa-heartbeat me-1"></i>Check Service Status
-              </button>
-              <button class="btn btn-sm btn-outline-secondary me-2" (click)="debugAuth()">
-                <i class="fas fa-bug me-1"></i>Debug Auth
-              </button>
-              <button class="btn btn-sm btn-outline-warning me-2" (click)="quickTest()">
-                <i class="fas fa-flask me-1"></i>Quick Test
-              </button>
-              <button class="btn btn-sm btn-outline-success me-2" (click)="testAdminEndpoint()">
-                <i class="fas fa-vial me-1"></i>Test Admin API
-              </button>
-              <button class="btn btn-sm btn-outline-danger me-2" (click)="checkSystemReadiness()">
-                <i class="fas fa-clipboard-check me-1"></i>System Check
-              </button>
-              <a class="btn btn-sm btn-outline-info" routerLink="/startup-guide">
-                <i class="fas fa-rocket me-1"></i>Startup Guide
-              </a>tton>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="row mt-4">
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header">
-              <h5><i class="fas fa-spider me-2"></i>Crawler Management</h5>
-            </div>
-            <div class="card-body">
-              <p>Control crawler service and queue management.</p>
-              <button class="btn btn-success me-2" (click)="startCrawler()">
-                <i class="fas fa-play me-1"></i>
-                Start Service
-              </button>
-              <button class="btn btn-danger me-2" (click)="stopCrawler()">
-                <i class="fas fa-stop me-1"></i>
-                Stop Service
-              </button>
-              <button class="btn btn-info me-2" (click)="viewCrawlerQueue()">
-                <i class="fas fa-list me-1"></i>
-                View Queue
-              </button>
-              <button class="btn btn-secondary" (click)="testConnection()">
-                <i class="fas fa-heartbeat me-1"></i>
-                Test Connection
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header">
-              <h5><i class="fas fa-database me-2"></i>Index Management</h5>
-            </div>
-            <div class="card-body">
-              <p>Manage search index and optimization.</p>
-              <button class="btn btn-primary me-2" (click)="reindexAll()">
-                <i class="fas fa-sync me-1"></i>
-                Reindex All
-              </button>
-              <button class="btn btn-warning me-2" (click)="optimizeIndex()">
-                <i class="fas fa-tachometer-alt me-1"></i>
-                Optimize
-              </button>
-              <button class="btn btn-danger" (click)="clearIndex()">
-                <i class="fas fa-trash me-1"></i>
-                Clear Index
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="row mt-4">
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header">
-              <h5><i class="fas fa-shield-alt me-2"></i>Content Moderation</h5>
-            </div>
-            <div class="card-body">
-              <p>Manage blocked domains and content filtering.</p>
-              <button class="btn btn-secondary me-2" (click)="viewBlockedDomains()">
-                <i class="fas fa-ban me-1"></i>
-                Blocked Domains
-              </button>
-              <button class="btn btn-info" (click)="viewCrawlPolicies()">
-                <i class="fas fa-file-alt me-1"></i>
-                Crawl Policies
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header">
-              <h5><i class="fas fa-chart-line me-2"></i>Analytics & Monitoring</h5>
-            </div>
-            <div class="card-body">
-              <p>View system performance and usage analytics.</p>
-              <button class="btn btn-info me-2" (click)="viewSystemMetrics()">
-                <i class="fas fa-chart-bar me-1"></i>
-                System Metrics
-              </button>
-              <button class="btn btn-primary" (click)="viewSearchAnalytics()">
-                <i class="fas fa-search me-1"></i>
-                Search Analytics
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="row mt-4">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header">
-              <h5><i class="fas fa-chart-bar me-2"></i>System Overview</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-3">
-                  <div class="text-center">
-                    <h6>Crawler Status</h6>
-                    <span class="badge bg-success">Running</span>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="text-center">
-                    <h6>Queue Size</h6>
-                    <span class="badge bg-warning">45</span>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="text-center">
-                    <h6>Documents Indexed</h6>
-                    <span class="badge bg-info">1,234</span>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="text-center">
-                    <h6>Index Size</h6>
-                    <span class="badge bg-primary">2.4 GB</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `
+  templateUrl: './admin-panel.component.html',
+  styleUrls: ['./admin-panel.component.scss']
 })
 export class AdminPanelComponent implements OnInit {
 
   constructor(
-    private http: HttpClient,
+    private adminPanelService: AdminPanelService,
     private authService: AuthService
   ) { }
 
@@ -216,31 +44,8 @@ export class AdminPanelComponent implements OnInit {
   }
 
   // Admin request method - uses API Gateway with JWT authentication
-  private makeAdminRequest<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: any): Observable<T> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'X-Admin-Request': 'true'
-    });
-
-    const options = { headers };
-    const fullUrl = `${environment.apiUrl}/${path}`;
-
-    console.log(`Making ${method} request to: ${fullUrl}`, {
-      authenticated: this.authService.isAuthenticated,
-      hasToken: !!this.authService.accessToken,
-      isAdmin: this.authService.isAdmin()
-    });
-
-    switch (method) {
-      case 'GET':
-        return this.http.get<T>(fullUrl, options);
-      case 'POST':
-        return this.http.post<T>(fullUrl, body || {}, options);
-      case 'DELETE':
-        return this.http.delete<T>(fullUrl, options);
-      default:
-        throw new Error(`Unsupported method: ${method}`);
-    }
+  private makeAdminRequest<T>(method: 'GET' | 'POST' | 'DELETE', path: string, body?: any) {
+    return this.adminPanelService.makeAdminRequest<T>(method, path, body);
   }
 
   startCrawler() {
@@ -354,34 +159,8 @@ export class AdminPanelComponent implements OnInit {
     });
   }
 
-  private checkServiceHealth(service: { name: string, url: string, port: string }): Observable<string> {
-    // Use special headers to bypass auth interceptor for health checks
-    const headers = new HttpHeaders({
-      'X-Skip-Auth-Interceptor': 'true',
-      'Content-Type': 'application/json'
-    });
-
-    return this.http.get(service.url, { headers }).pipe(
-      timeout(5000), // 5 second timeout
-      catchError((err: any) => {
-        console.error(`${service.name} (${service.port}): Failed`, err);
-        let status = 'Not running';
-        if (err.status === 0 || err.name === 'TimeoutError') {
-          status = 'Cannot connect - service may be down';
-        } else if (err.status === 404) {
-          status = 'Service running but health endpoint not found';
-        } else if (err.status === 401 || err.status === 403) {
-          status = 'Running (auth required for health endpoint)';
-        } else if (err.status >= 500) {
-          status = 'Service error - check logs';
-        }
-        return of(`❌ ${service.name} (port ${service.port}): ${status}`);
-      }),
-      map((data: any) => {
-        console.log(`${service.name} (${service.port}): OK`, data);
-        return `✅ ${service.name} (port ${service.port}): Running`;
-      })
-    );
+  private checkServiceHealth(service: { name: string, url: string, port: string }) {
+    return this.adminPanelService.checkServiceHealth(service);
   }
 
   private showConnectionResults(results: string[]) {
@@ -451,17 +230,8 @@ export class AdminPanelComponent implements OnInit {
   }
 
   // Simple backend availability check
-  private checkBackendAvailability(): Observable<boolean> {
-    const headers = new HttpHeaders({
-      'X-Skip-Auth-Interceptor': 'true',
-      'Content-Type': 'application/json'
-    });
-
-    return this.http.get(`${environment.apiUrl}/actuator/health`, { headers }).pipe(
-      timeout(3000),
-      map(() => true),
-      catchError(() => of(false))
-    );
+  private checkBackendAvailability() {
+    return this.adminPanelService.checkBackendAvailability();
   }
 
   // Unified admin action executor with proper error handling

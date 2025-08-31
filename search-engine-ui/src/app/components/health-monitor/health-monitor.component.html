@@ -1,0 +1,45 @@
+<div class="health-monitor">
+  <div class="health-header">
+    <h3>System Health Monitor</h3>
+    <div class="overall-status" [class]="'status-' + systemHealth?.overall?.toLowerCase()">
+      <span class="status-indicator"></span>
+      {{ systemHealth?.overall || 'CHECKING...' }}
+    </div>
+    <button (click)="refreshHealth()" [disabled]="isLoading" class="refresh-btn">
+      {{ isLoading ? 'Checking...' : 'Refresh' }}
+    </button>
+  </div>
+
+  <div class="services-grid" *ngIf="systemHealth">
+    <div 
+      *ngFor="let service of systemHealth.services" 
+      class="service-card"
+      [class]="'status-' + service.status.toLowerCase()"
+    >
+      <div class="service-header">
+        <h4>{{ service.name }}</h4>
+        <span class="status-badge">{{ service.status }}</span>
+      </div>
+      <div class="service-details">
+        <div *ngIf="service.responseTime" class="response-time">
+          Response: {{ service.responseTime }}ms
+        </div>
+        <div *ngIf="service.details?.error" class="error-details">
+          Error: {{ service.details.error }}
+        </div>
+        <div *ngIf="service.details?.components" class="components">
+          <div *ngFor="let comp of getComponents(service.details.components)" class="component">
+            <span class="component-name">{{ comp.name }}:</span>
+            <span class="component-status" [class]="'status-' + comp.status.toLowerCase()">
+              {{ comp.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="last-updated" *ngIf="systemHealth">
+    Last updated: {{ formatTimestamp(systemHealth.timestamp) }}
+  </div>
+</div>

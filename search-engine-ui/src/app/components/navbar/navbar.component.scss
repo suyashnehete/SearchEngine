@@ -1,0 +1,38 @@
+.navbar {
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.08);
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.2em;
+}
+
+.me-2 {
+    margin-right: 0.5rem !important;
+}
+
+.me-1 {
+    margin-right: 0.25rem !important;
+}
+
+.nav-link.active {
+    font-weight: bold;
+    color: #fff !important;
+}
+
+.dropdown-menu {
+    min-width: 180px;
+}
+
+.dropdown-item-text {
+    padding-left: 1.5rem;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+hr.dropdown-divider {
+    margin: 0.5rem 0;
+}

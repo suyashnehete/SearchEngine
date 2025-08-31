@@ -5,8 +5,8 @@ import { CrawlerComponent } from './components/crawler/crawler.component';
 import { LoginComponent } from './auth/login.component';
 import { AuthCallbackComponent } from './auth/auth-callback.component';
 import { UnauthorizedComponent } from './auth/unauthorized.component';
-import { AdminPanelComponent } from './components/admin-panel.component';
-import { StartupGuideComponent } from './components/startup-guide.component';
+import { AdminPanelComponent } from './components/admin/admin-panel.component';
+import { StartupGuideComponent } from './components/startup-guide/startup-guide.component';
 import { AuthGuard } from './auth/auth.guard';
 
 const routes: Routes = [

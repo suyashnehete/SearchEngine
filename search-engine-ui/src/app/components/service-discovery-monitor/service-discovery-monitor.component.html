@@ -1,0 +1,119 @@
+<div class="discovery-monitor">
+  <div class="monitor-header">
+    <h3>Service Discovery Monitor</h3>
+    <div
+      class="eureka-status"
+      [class]="discoveryStatus?.eurekaAvailable ? 'status-up' : 'status-down'"
+    >
+      <span class="status-indicator"></span>
+      Eureka
+      {{ discoveryStatus?.eurekaAvailable ? "Available" : "Unavailable" }}
+    </div>
+    <button
+      (click)="refreshStatus()"
+      [disabled]="isLoading"
+      class="refresh-btn"
+    >
+      {{ isLoading ? "Checking..." : "Refresh" }}
+    </button>
+  </div>
+
+  <div class="stats-row" *ngIf="discoveryStatus">
+    <div class="stat-card">
+      <div class="stat-value">{{ discoveryStatus.serviceCount }}</div>
+      <div class="stat-label">Total Instances</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ discoveryStatus.healthyServices }}</div>
+      <div class="stat-label">Healthy Instances</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">
+        {{ discoveryStatus.registeredServices.length }}
+      </div>
+      <div class="stat-label">Registered Services</div>
+    </div>
+  </div>
+
+  <div
+    class="services-section"
+    *ngIf="
+      discoveryStatus?.registeredServices &&
+      discoveryStatus!.registeredServices.length > 0
+    "
+  >
+    <h4>Registered Services</h4>
+    <div class="services-list">
+      <div
+        *ngFor="let service of discoveryStatus?.registeredServices"
+        class="service-item"
+      >
+        <div class="service-header">
+          <h5>{{ service.name }}</h5>
+          <span class="instance-count"
+            >{{ service.instances.length }} instance(s)</span
+          >
+        </div>
+        <div class="instances-list">
+          <div
+            *ngFor="let instance of service.instances"
+            class="instance-item"
+            [class]="'status-' + instance.status.toLowerCase()"
+          >
+            <div class="instance-info">
+              <span class="instance-id">{{ instance.instanceId }}</span>
+              <span class="instance-address"
+                >{{ instance.ipAddr }}:{{ instance.port }}</span
+              >
+            </div>
+            <div class="instance-status">
+              <span class="status-badge">{{ instance.status }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="communication-test" *ngIf="communicationResults">
+    <h4>Service Communication Test</h4>
+    <div class="communication-grid">
+      <div
+        *ngFor="let result of getCommunicationResults()"
+        class="communication-item"
+        [class]="result.success ? 'status-up' : 'status-down'"
+      >
+        <span class="service-name">{{ result.name }}</span>
+        <span class="communication-status">
+          {{ result.success ? "Reachable" : "Unreachable" }}
+        </span>
+      </div>
+    </div>
+    <button
+      (click)="testCommunication()"
+      [disabled]="isTestingCommunication"
+      class="test-btn"
+    >
+      {{ isTestingCommunication ? "Testing..." : "Test Communication" }}
+    </button>
+  </div>
+
+  <div class="gateway-routes" *ngIf="gatewayRoutes && gatewayRoutes.length">
+    <h4>Gateway Routes</h4>
+    <div class="routes-list">
+      <div *ngFor="let route of gatewayRoutes" class="route-item">
+        <div class="route-id">{{ route.route_id }}</div>
+        <div class="route-uri">{{ route.uri }}</div>
+        <div class="route-predicates">
+          <span *ngFor="let predicate of route.predicates" class="predicate">
+            {{ predicate }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="last-updated" *ngIf="discoveryStatus">
+    Last updated: {{ formatTimestamp(discoveryStatus.timestamp) }}
+  </div>
+</div>

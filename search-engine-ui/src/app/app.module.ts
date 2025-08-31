@@ -14,10 +14,10 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { LoginComponent } from './auth/login.component';
 import { AuthCallbackComponent } from './auth/auth-callback.component';
 import { UnauthorizedComponent } from './auth/unauthorized.component';
-import { NavbarComponent } from './components/navbar.component';
-import { AdminPanelComponent } from './components/admin-panel.component';
-import { LoginModalComponent } from './components/login-modal.component';
-import { StartupGuideComponent } from './components/startup-guide.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { AdminPanelComponent } from './components/admin/admin-panel.component';
+import { LoginModalComponent } from './components/login-modal/login-modal.component';
+import { StartupGuideComponent } from './components/startup-guide/startup-guide.component';
 
 @NgModule({
   declarations: [
